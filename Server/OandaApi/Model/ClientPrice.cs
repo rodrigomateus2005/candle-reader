@@ -74,7 +74,7 @@ namespace IO.Swagger.Model {
     /// <value>The closeout bid Price. This Price is used when a bid is required to closeout a Position (margin closeout or manual) yet there is no bid liquidity. The closeout bid is never used to open a new position.</value>
     [DataMember(Name="closeoutBid", EmitDefaultValue=false)]
     [JsonProperty(PropertyName = "closeoutBid")]
-    public string CloseoutBid { get; set; }
+    public decimal CloseoutBid { get; set; }
 
     /// <summary>
     /// The closeout ask Price. This Price is used when a ask is required to closeout a Position (margin closeout or manual) yet there is no ask liquidity. The closeout ask is never used to open a new position.
@@ -82,7 +82,7 @@ namespace IO.Swagger.Model {
     /// <value>The closeout ask Price. This Price is used when a ask is required to closeout a Position (margin closeout or manual) yet there is no ask liquidity. The closeout ask is never used to open a new position.</value>
     [DataMember(Name="closeoutAsk", EmitDefaultValue=false)]
     [JsonProperty(PropertyName = "closeoutAsk")]
-    public string CloseoutAsk { get; set; }
+    public decimal CloseoutAsk { get; set; }
 
     /// <summary>
     /// Gets or Sets QuoteHomeConversionFactors

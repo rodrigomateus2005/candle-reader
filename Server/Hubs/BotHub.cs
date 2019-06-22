@@ -1,17 +1,28 @@
+using System.Threading.Tasks;
+using Server.Dependecy;
 using Microsoft.AspNetCore.SignalR;
 
-namespace candle_reader.Hubs
+namespace Server.Hubs
 {
     public class BotHub : Hub
     {
-        private CandleReader candleReader;
-        public BotHub() {
-            this.candleReader = new CandleReader(this.Clients);
-            this.candleReader.Start();
+        private static IHubCallerClients ClientsStatic;
+
+        private ICandleReader candleReader;
+        public BotHub(ICandleReader candleReader)
+        {
+            this.candleReader = candleReader;
         }
 
-        override OnConnectedAsync() {
-            
+        public override Task OnConnectedAsync()
+        {
+            this.candleReader.Clients = this.Clients;
+            return base.OnConnectedAsync();
+        }
+
+        public override Task OnDisconnectedAsync(System.Exception exception)
+        {
+            return base.OnDisconnectedAsync(exception);
         }
 
 

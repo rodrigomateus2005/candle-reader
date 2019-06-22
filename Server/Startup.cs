@@ -1,10 +1,11 @@
-using candle_reader.Hubs;
+using Server.Dependecy;
+using Server.Hubs;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace candle_reader
+namespace Server
 {
     public class Startup
     {
@@ -21,6 +22,13 @@ namespace candle_reader
             services.AddCors();
             services.AddSignalR();
             services.AddMvc();
+            services.AddSingleton<ICandleReader>((sp) => {
+
+                var candleReader = new OAndaCandleReader(); 
+                candleReader.Start();
+                return candleReader;
+
+            });
                 //.SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
