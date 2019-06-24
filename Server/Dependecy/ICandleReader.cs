@@ -8,6 +8,9 @@ namespace Server.Dependecy
         event PriceChangedEventHandler PriceChanged;
         IHubCallerClients Clients { get; set; }
 
+        Candle[] GetCandles200();
+        Candle[] GetCandles20();
+        Candle[] GetCandles8();
     }
 
     public delegate void PriceChangedEventHandler(object sender, PriceChangedEventArgs e);
@@ -16,5 +19,16 @@ namespace Server.Dependecy
     {
         public decimal PrecoCompra { get; set; }
         public decimal PrecoVenda { get; set; }
+        public DateTime Time { get; set; }
+    }
+
+    public class Candle
+    {
+        public DateTime Time { get; set; }
+        public decimal Open { get; set; }
+        public decimal Close { get; set; }
+        public decimal High { get; set; }
+        public decimal Low { get; set; }
+        public decimal Volume { get; set; }
     }
 }

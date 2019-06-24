@@ -34,7 +34,7 @@ namespace IO.Swagger.Model {
     /// <value>The date/time when the Price was created</value>
     [DataMember(Name="time", EmitDefaultValue=false)]
     [JsonProperty(PropertyName = "time")]
-    public string Time { get; set; }
+    public System.DateTime Time { get; set; }
 
     /// <summary>
     /// The status of the Price.

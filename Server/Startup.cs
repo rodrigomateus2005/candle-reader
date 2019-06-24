@@ -19,16 +19,13 @@ namespace Server
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var candleReader = new OAndaCandleReader(); 
+            candleReader.Start();
+
             services.AddCors();
             services.AddSignalR();
             services.AddMvc();
-            services.AddSingleton<ICandleReader>((sp) => {
-
-                var candleReader = new OAndaCandleReader(); 
-                candleReader.Start();
-                return candleReader;
-
-            });
+            services.AddSingleton<ICandleReader>(candleReader);
                 //.SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 

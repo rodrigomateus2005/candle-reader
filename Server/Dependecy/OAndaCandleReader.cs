@@ -70,7 +70,8 @@ namespace Server.Dependecy
                                 this.OnPriceChanged(new PriceChangedEventArgs()
                                 {
                                     PrecoVenda = price.CloseoutAsk,
-                                    PrecoCompra = price.CloseoutBid
+                                    PrecoCompra = price.CloseoutBid,
+                                    Time = price.Time
                                 });
                             }
                         }
