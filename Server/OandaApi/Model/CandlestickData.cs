@@ -18,7 +18,7 @@ namespace IO.Swagger.Model {
     /// <value>The first (open) price in the time-range represented by the candlestick.</value>
     [DataMember(Name="o", EmitDefaultValue=false)]
     [JsonProperty(PropertyName = "o")]
-    public string O { get; set; }
+    public decimal O { get; set; }
 
     /// <summary>
     /// The highest price in the time-range represented by the candlestick.
@@ -26,7 +26,7 @@ namespace IO.Swagger.Model {
     /// <value>The highest price in the time-range represented by the candlestick.</value>
     [DataMember(Name="h", EmitDefaultValue=false)]
     [JsonProperty(PropertyName = "h")]
-    public string H { get; set; }
+    public decimal H { get; set; }
 
     /// <summary>
     /// The lowest price in the time-range represented by the candlestick.
@@ -34,7 +34,7 @@ namespace IO.Swagger.Model {
     /// <value>The lowest price in the time-range represented by the candlestick.</value>
     [DataMember(Name="l", EmitDefaultValue=false)]
     [JsonProperty(PropertyName = "l")]
-    public string L { get; set; }
+    public decimal L { get; set; }
 
     /// <summary>
     /// The last (closing) price in the time-range represented by the candlestick.
@@ -42,7 +42,7 @@ namespace IO.Swagger.Model {
     /// <value>The last (closing) price in the time-range represented by the candlestick.</value>
     [DataMember(Name="c", EmitDefaultValue=false)]
     [JsonProperty(PropertyName = "c")]
-    public string C { get; set; }
+    public decimal C { get; set; }
 
 
     /// <summary>

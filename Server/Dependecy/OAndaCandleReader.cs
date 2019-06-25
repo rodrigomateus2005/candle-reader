@@ -1,6 +1,7 @@
 using System.Net;
 using IO.Swagger.Model;
 using Microsoft.AspNetCore.SignalR;
+using System.Linq;
 
 namespace Server.Dependecy
 {
@@ -9,6 +10,8 @@ namespace Server.Dependecy
         public event PriceChangedEventHandler PriceChanged;
 
         private const string BEARER = "f4190fc6dfd5053a9ead7ac5859877ed-ecd9409135fd86d82bde352da8de2b15";
+        private const string INSTRUMENTS = "EUR_USD";
+        private const string ACCOUNT = "101-011-11435111-001";
         private IO.Swagger.Api.DefaultApi api;
 
         public IHubCallerClients Clients { get; set; }
@@ -35,7 +38,7 @@ namespace Server.Dependecy
 
             System.Action connect = () =>
             {
-                con.OpenReadAsync(new System.Uri("https://stream-fxpractice.oanda.com/v3/accounts/" + "101-011-11435111-001" + "/pricing/stream?instruments=EUR_USD"));
+                con.OpenReadAsync(new System.Uri("https://stream-fxpractice.oanda.com/v3/accounts/" + OAndaCandleReader.ACCOUNT + "/pricing/stream?instruments=" + OAndaCandleReader.INSTRUMENTS));
             };
 
             con.OpenReadCompleted += (object sender, OpenReadCompletedEventArgs e) =>
@@ -87,6 +90,20 @@ namespace Server.Dependecy
             connect();
         }
 
+        public Candle[] GetCandles200()
+        {
+            var candles = this.api.GetInstrumentCandles(OAndaCandleReader.INSTRUMENTS, null, null, "M5", 200, null, null, null, false, null, null, null);
+
+            var retorno = candles.Candles.Select(x => new Candle() {
+                Open = x.Mid.O
+                , Close = x.Mid.C
+                , High = x.Mid.H
+                , Low = x.Mid.L
+            }).ToArray();
+
+            return retorno;
+        }
+
         protected virtual void OnPriceChanged(PriceChangedEventArgs e)
         {
             this.PriceChanged?.Invoke(this, e);
@@ -94,6 +111,5 @@ namespace Server.Dependecy
                     e
                  });
         }
-
     }
 }

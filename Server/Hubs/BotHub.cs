@@ -25,6 +25,11 @@ namespace Server.Hubs
             return base.OnDisconnectedAsync(exception);
         }
 
+        public Candle[] GetCandles()
+        {
+            return this.candleReader.GetCandles200();
+        }
+
 
     }
 }

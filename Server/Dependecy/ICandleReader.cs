@@ -9,8 +9,6 @@ namespace Server.Dependecy
         IHubCallerClients Clients { get; set; }
 
         Candle[] GetCandles200();
-        Candle[] GetCandles20();
-        Candle[] GetCandles8();
     }
 
     public delegate void PriceChangedEventHandler(object sender, PriceChangedEventArgs e);
