@@ -92,7 +92,7 @@ namespace Server.Dependecy
 
         public Candle[] GetCandles200()
         {
-            var candles = this.api.GetInstrumentCandles(OAndaCandleReader.INSTRUMENTS, null, null, "M5", 200, null, null, null, false, null, null, null);
+            var candles = this.api.GetInstrumentCandles(OAndaCandleReader.INSTRUMENTS, null, null, "M5", 200, null, null, null, null, null, null, null);
 
             var retorno = candles.Candles.Select(x => new Candle() {
                 Open = x.Mid.O

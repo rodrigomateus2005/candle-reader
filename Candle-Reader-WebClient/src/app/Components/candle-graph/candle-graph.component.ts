@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ElementRef, AfterViewInit, Input } from '@angular/core';
 import * as $ from 'jquery';
 import * as d3 from 'd3';
 import * as techan from 'techan';
@@ -10,6 +10,25 @@ import * as techan from 'techan';
 })
 export class CandleGraphComponent implements OnInit, AfterViewInit {
 
+
+  private _Data: any[];
+  public get Data(): any[] {
+    return this._Data;
+  }
+  @Input()
+  public set Data(value: any[]) {
+    this._Data = value;
+    this.draw();
+  }
+
+  private candlestick: any;
+  private svg: any;
+
+  private x: any;
+  private y: any;
+  private xAxis: d3.Axis<d3.AxisDomain>;
+  private yAxis: d3.Axis<number | { valueOf(): number; }>;
+
   constructor(private elmentRef: ElementRef) { }
 
   ngOnInit() {
@@ -19,8 +38,6 @@ export class CandleGraphComponent implements OnInit, AfterViewInit {
     const margin = { top: 20, right: 20, bottom: 30, left: 50 },
       width = 960 - margin.left - margin.right,
       height = 500 - margin.top - margin.bottom;
-
-    const parseDate = d3.timeParse('%d-%b-%y');
 
     const x = techan.scale.financetime()
       .range([0, width]);
@@ -32,29 +49,16 @@ export class CandleGraphComponent implements OnInit, AfterViewInit {
       .xScale(x)
       .yScale(y);
 
-    const xAxis = d3.axisBottom()
-      .scale(x);
+    const xAxis = d3.axisBottom(x);
 
-    const yAxis = d3.axisLeft()
-      .scale(y);
+    const yAxis = d3.axisLeft(y);
 
-    const svg = $(this.elmentRef.nativeElement).attr('width', width + margin.left + margin.right)
+    let svg = d3.select($(this.elmentRef.nativeElement).find('svg')[0]);
+
+    svg = svg.attr('width', width + margin.left + margin.right)
       .attr('height', height + margin.top + margin.bottom)
       .append('g')
       .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-
-    const accessor = candlestick.accessor();
-
-    data = data.slice(0, 200).map(function (d) {
-      return {
-        date: parseDate(d.Date),
-        open: +d.Open,
-        high: +d.High,
-        low: +d.Low,
-        close: +d.Close,
-        volume: +d.Volume
-      };
-    }).sort(function (a, b) { return d3.ascending(accessor.d(a), accessor.d(b)); });
 
     svg.append('g')
       .attr('class', 'candlestick');
@@ -72,19 +76,40 @@ export class CandleGraphComponent implements OnInit, AfterViewInit {
       .style('text-anchor', 'end')
       .text('Price ($)');
 
-    // Data to display initially
-    this.draw(data.slice(0, data.length - 20));
-    // Only want this button to be active if the data has loaded
-    d3.select('button').on('click', function () { draw(data); }).style('display', 'inline');
+
+      this.svg = svg;
+      this.candlestick = candlestick;
+      this.x = x;
+      this.y = y;
+      this.xAxis = xAxis;
+      this.yAxis = yAxis;
+
+      this.draw();
   }
 
-  private draw(data) {
-    x.domain(data.map(candlestick.accessor().d));
-    y.domain(techan.scale.plot.ohlc(data, candlestick.accessor()).domain());
+  private draw() {
+    if (this.svg) {
+      const accessor = this.candlestick.accessor();
+      var data = this.Data.map(function(d) {
+        return {
+            date: d.time,
+            open: +d.open,
+            high: +d.high,
+            low: +d.low,
+            close: +d.close,
+            volume: +d.volume
+        };
+    });
 
-    svg.selectAll('g.candlestick').datum(data).call(candlestick);
-    svg.selectAll('g.x.axis').call(xAxis);
-    svg.selectAll('g.y.axis').call(yAxis);
+      data.sort(function(a, b) { return d3.ascending(accessor.d(a), accessor.d(b)); });
+
+      this.x.domain(data.map(accessor.d));
+      this.y.domain(techan.scale.plot.ohlc(data, accessor).domain());
+
+      this.svg.selectAll('g.candlestick').datum(data).call(this.candlestick);
+      this.svg.selectAll('g.x.axis').call(this.xAxis);
+      this.svg.selectAll('g.y.axis').call(this.yAxis);
+    }
   }
 
 }

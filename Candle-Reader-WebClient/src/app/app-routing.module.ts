@@ -4,7 +4,7 @@ import { BotViewComponent } from './Pages/bot-view/bot-view.component';
 
 const routes: Routes = [
   {
-    path: 'bot-view',
+    path: 'home',
     component: BotViewComponent
   },
   {
