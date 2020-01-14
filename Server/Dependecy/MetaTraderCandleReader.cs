@@ -31,7 +31,7 @@ namespace Server.Dependecy
 
         public void Start()
         {
-            this._mtApiClient.BeginConnect("127.0.0.1", MetaTraderCandleReader.PORT);
+            this._mtApiClient.BeginConnect("localhost", MetaTraderCandleReader.PORT);
         }
 
         private Candle[] GetCandles(string symbol, ENUM_TIMEFRAMES timeFrame, int count) {

@@ -30,6 +30,5 @@ namespace Server.Hubs
             return this.candleReader.GetCandles200();
         }
 
-
     }
 }
