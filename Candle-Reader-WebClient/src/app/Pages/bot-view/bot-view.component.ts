@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import * as signalR from "@aspnet/signalr";
+import { CandleSignalRService } from 'src/app/Services/CandleSignalR/candle-signal-r.service';
 
 @Component({
   selector: 'app-bot-view',
@@ -8,29 +8,19 @@ import * as signalR from "@aspnet/signalr";
 })
 export class BotViewComponent implements OnInit {
 
-  private hubConnection: signalR.HubConnection
-
   public Data = [];
 
-  constructor() {
-    this.hubConnection = new signalR.HubConnectionBuilder()
-    .withUrl("http://localhost:5010/BotHub")
-    .configureLogging(signalR.LogLevel.Information)
-    .build();
+  constructor(private candleSignalRService: CandleSignalRService) {
 
-    this.hubConnection.start().then(() => {
-      console.log("connected");
-
-      this.hubConnection.invoke("GetCandles").then(data => {
+    candleSignalRService.conect().then(() => {
+      candleSignalRService.getCandles().then(data => {
         this.Data = data;
-      }).catch(err => {
-        console.error(err.toString());
       });
     });
 
-    this.hubConnection.on("OnPriceChange", (retorno) => {
-        console.log(retorno);
-    });
+    // this.hubConnection.on('OnPriceChange', (retorno) => {
+    //   console.log(retorno);
+    // });
   }
 
   ngOnInit() {

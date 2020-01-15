@@ -90,7 +90,7 @@ export class CandleGraphComponent implements OnInit, AfterViewInit {
   private draw() {
     if (this.svg) {
       const accessor = this.candlestick.accessor();
-      var data = this.Data.map(function(d) {
+      const data = this.Data.map(function(d) {
         return {
             date: d.time,
             open: +d.open,
