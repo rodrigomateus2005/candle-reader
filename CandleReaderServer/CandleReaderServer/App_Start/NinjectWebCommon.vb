@@ -12,8 +12,9 @@ Public Module NinjectWebCommon
     Private ReadOnly bootstrapper As Bootstrapper = New Bootstrapper()
 
     Public Sub Start()
-        DynamicModuleUtility.RegisterModule(GetType(OnePerRequestHttpModule))
-        DynamicModuleUtility.RegisterModule(GetType(NinjectHttpModule))
+        'DynamicModuleUtility.RegisterModule(GetType(OnePerRequestHttpModule))
+        'DynamicModuleUtility.RegisterModule(GetType(NinjectHttpModule))
+
         bootstrapper.Initialize(AddressOf CreateKernel)
     End Sub
 
@@ -24,11 +25,12 @@ Public Module NinjectWebCommon
     Private Function CreateKernel() As IKernel
         Dim kernel = New StandardKernel()
         kernel.Bind(Of Func(Of IKernel))().ToMethod(Function(ctx) Function() New Bootstrapper().Kernel)
-        kernel.Bind(Of IHttpModule)().To(Of HttpApplicationInitializationHttpModule)()
+        'kernel.Bind(Of IHttpModule)().To(Of HttpApplicationInitializationHttpModule)()
 
         RegisterServices(kernel)
 
         GlobalConfiguration.Configuration.DependencyResolver = New LocalNinjectDependencyResolver(kernel)
+        Microsoft.AspNet.SignalR.GlobalHost.DependencyResolver = New LocalNinjectSignalRDependencyResolver(kernel)
 
         Return kernel
     End Function

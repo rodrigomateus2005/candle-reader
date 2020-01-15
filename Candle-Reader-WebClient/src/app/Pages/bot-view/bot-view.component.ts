@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CandleSignalRService } from 'src/app/Services/CandleSignalR/candle-signal-r.service';
 
 @Component({
@@ -6,7 +6,7 @@ import { CandleSignalRService } from 'src/app/Services/CandleSignalR/candle-sign
   templateUrl: './bot-view.component.html',
   styleUrls: ['./bot-view.component.scss']
 })
-export class BotViewComponent implements OnInit {
+export class BotViewComponent implements OnInit, OnDestroy {
 
   public Data = [];
 
@@ -18,13 +18,19 @@ export class BotViewComponent implements OnInit {
       });
     });
 
-    // this.hubConnection.on('OnPriceChange', (retorno) => {
-    //   console.log(retorno);
-    // });
+    candleSignalRService.priceChanged.subscribe(this.priceChanged);
   }
 
   ngOnInit() {
 
+  }
+
+  ngOnDestroy(): void {
+    this.candleSignalRService.priceChanged.unsubscribe();
+  }
+
+  public priceChanged(price) {
+    console.log(price);
   }
 
 }

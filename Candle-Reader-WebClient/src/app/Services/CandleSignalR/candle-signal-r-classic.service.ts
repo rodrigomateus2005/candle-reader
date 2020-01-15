@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { CandleSignalRService } from './candle-signal-r.service';
 
-import * as $ from 'jquery';
-import 'signalr';
 import { environment } from 'src/environments/environment';
+
+declare const $: any;
 
 @Injectable()
 export class CandleSignalRClassicService extends CandleSignalRService {
@@ -15,7 +15,7 @@ export class CandleSignalRClassicService extends CandleSignalRService {
     if (!this.hubConnection) {
       $.connection.hub.url = environment.urlWebApi;
 
-      this.hubConnection = $.hubConnection('/signalr', { useDefaultPath: false });
+      this.hubConnection = $.hubConnection(environment.urlWebApi + '/signalr', { useDefaultPath: false });
 
       this.hubProxy = this.hubConnection.createHubProxy('botHub');
     }
@@ -30,9 +30,10 @@ export class CandleSignalRClassicService extends CandleSignalRService {
       }).fail(reject);
     });
   }
+
   public getCandles(): Promise<any[]> {
     return new Promise((resolve, reject) => {
-      this.hubProxy.invoke('GetCandles').done(data => {
+      this.hubProxy.invoke('getCandles').done(data => {
         resolve(data);
       }).fail(reject);
     });

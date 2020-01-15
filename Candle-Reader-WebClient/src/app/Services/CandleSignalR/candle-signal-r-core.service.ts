@@ -14,6 +14,10 @@ export class CandleSignalRCoreService extends CandleSignalRService {
         .withUrl(environment.urlWebApi + '/BotHub')
         .configureLogging(signalR.LogLevel.Information)
         .build();
+
+      this.hubConnection.on('OnPriceChange', (retorno) => {
+        this.onPriceChange(retorno);
+      });
     }
   }
 
@@ -27,12 +31,16 @@ export class CandleSignalRCoreService extends CandleSignalRService {
     });
   }
 
-  getCandles(): Promise<any[]> {
+  public getCandles(): Promise<any[]> {
     return new Promise((resolve, reject) => {
       this.hubConnection.invoke('GetCandles').then(data => {
         resolve(data);
       }).catch(reject);
     });
+  }
+
+  private onPriceChange(price) {
+    this.priceChanged.emit(price);
   }
 
 }
