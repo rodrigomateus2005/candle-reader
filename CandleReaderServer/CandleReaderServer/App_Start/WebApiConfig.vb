@@ -2,13 +2,17 @@
 Imports System.Collections.Generic
 Imports System.Linq
 Imports System.Web.Http
-
+Imports System.Web.Http.Cors
 Imports Microsoft.Extensions.DependencyInjection
 
 Public Module WebApiConfig
 
     Public Sub Register(ByVal config As HttpConfiguration)
         ' Web API configuration and services
+
+        Dim cors As EnableCorsAttribute = New EnableCorsAttribute("*", "*", "*")
+
+        config.EnableCors(cors)
 
         ' Web API routes
         config.MapHttpAttributeRoutes()
