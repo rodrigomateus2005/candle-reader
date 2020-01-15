@@ -34,10 +34,8 @@ Public Module NinjectWebCommon
     End Function
 
     Private Sub RegisterServices(kernel As IKernel)
-        Dim candleReader = New MetaTraderCandleReader()
-        candleReader.Start()
 
-        kernel.Bind(Of ICandleReader)().ToConstant(candleReader).InSingletonScope()
+        CandleReaderConfig.RegisterReader(kernel)
 
     End Sub
 End Module
