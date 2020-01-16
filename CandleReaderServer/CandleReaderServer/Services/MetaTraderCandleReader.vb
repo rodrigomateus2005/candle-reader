@@ -4,8 +4,8 @@ Imports MtApi5
 Public Class MetaTraderCandleReader
     Implements ICandleReader
 
-    'Private Const SYMBOLS_NAME As String = "WIN$"
-    Private Const SYMBOLS_NAME As String = "EURUSD"
+    'Private Const INSTRUMENTS_NAME As String = "WIN$"
+    Private Const INSTRUMENTS_NAME As String = "EURUSD"
     Private Const PORT As Integer = 8228
     Private _mtApiClient As MtApi5Client
 
@@ -15,6 +15,7 @@ Public Class MetaTraderCandleReader
     Public Sub New()
         Me._mtApiClient = New MtApi5Client()
         AddHandler Me._mtApiClient.ConnectionStateChanged, AddressOf Me.ConnectionStateChanged
+        AddHandler Me._mtApiClient.QuoteUpdate, AddressOf Me.QuoteUpdated
     End Sub
 
     Protected Overrides Sub Finalize()
@@ -23,6 +24,23 @@ Public Class MetaTraderCandleReader
 
     Private Sub ConnectionStateChanged(ByVal sender As Object, ByVal e As Mt5ConnectionEventArgs)
         Console.WriteLine(e.ConnectionMessage)
+        If e.Status = Mt5ConnectionState.Connected Then
+            Me.OnConected()
+        End If
+    End Sub
+
+    Private Sub OnConected()
+
+    End Sub
+
+    Private Sub QuoteUpdated(ByVal sender As Object, ByVal e As Mt5QuoteEventArgs)
+        If e.Quote.Instrument = MetaTraderCandleReader.INSTRUMENTS_NAME Then
+            Me.OnPriceChanged(New PriceChangedEventArgs With {
+                                .Time = e.Quote.Time,
+                                .PrecoVenda = e.Quote.Bid,
+                                .PrecoCompra = e.Quote.Ask
+                          })
+        End If
     End Sub
 
     Public Sub Start()
@@ -61,7 +79,7 @@ Public Class MetaTraderCandleReader
     End Function
 
     Public Function GetCandles200() As Candle() Implements ICandleReader.GetCandles200
-        Dim retorno = Me.GetCandles(MetaTraderCandleReader.SYMBOLS_NAME, ENUM_TIMEFRAMES.PERIOD_M15, 200)
+        Dim retorno = Me.GetCandles(MetaTraderCandleReader.INSTRUMENTS_NAME, ENUM_TIMEFRAMES.PERIOD_M15, 200)
         Return retorno
     End Function
 

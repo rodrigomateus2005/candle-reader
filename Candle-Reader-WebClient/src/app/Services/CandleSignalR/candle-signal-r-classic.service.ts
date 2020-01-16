@@ -3,6 +3,7 @@ import { CandleSignalRService } from './candle-signal-r.service';
 
 import { environment } from 'src/environments/environment';
 import { Candle } from 'src/app/Models/Candle';
+import { Quote } from 'src/app/Models/Quote';
 
 declare const $: any;
 
@@ -38,5 +39,9 @@ export class CandleSignalRClassicService extends CandleSignalRService {
         resolve(data);
       }).fail(reject);
     });
+  }
+
+  private onPriceChange(price: Quote) {
+    this.priceChanged.emit(price);
   }
 }

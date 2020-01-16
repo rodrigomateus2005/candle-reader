@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, Input, ElementRef, ViewChild, IterableDiffer, IterableDiffers, DoCheck, KeyValueDiffer, KeyValueDiffers } from '@angular/core';
 
 import { createChart, IChartApi, ISeriesApi, BarData, HistogramData } from 'lightweight-charts';
 import { Candle } from 'src/app/Models/Candle';
@@ -8,7 +8,7 @@ import { Candle } from 'src/app/Models/Candle';
   templateUrl: './candle-graph-trading-view.component.html',
   styleUrls: ['./candle-graph-trading-view.component.scss']
 })
-export class CandleGraphTradingViewComponent implements OnInit {
+export class CandleGraphTradingViewComponent implements OnInit, DoCheck {
 
   private _Data: Candle[];
   public get Data(): Candle[] {
@@ -20,6 +20,9 @@ export class CandleGraphTradingViewComponent implements OnInit {
     this.draw();
   }
 
+  private dataDiffer: IterableDiffer<Candle>;
+  private lastCandleDiffer: KeyValueDiffer<string, any>;
+
   @ViewChild('graphDiv')
   public graphDiv: ElementRef;
 
@@ -27,12 +30,28 @@ export class CandleGraphTradingViewComponent implements OnInit {
   private candles: ISeriesApi<'Candlestick'>;
   private volumes: ISeriesApi<'Histogram'>;
 
-  constructor() {
+  constructor(private id: IterableDiffers, private kvd: KeyValueDiffers) {
+    this.dataDiffer = id.find([]).create();
+    this.lastCandleDiffer = kvd.find({}).create();
+  }
+
+  ngDoCheck(): void {
+    const dataChanges = this.dataDiffer.diff(this.Data);
+    if (dataChanges) {
+      this.draw();
+    }
+
+    if (this.Data) {
+      const lastCandleChanges = this.lastCandleDiffer.diff(this.Data.slice(-1)[0]);
+      if (lastCandleChanges) {
+        this.draw();
+      }
+    }
   }
 
   ngOnInit() {
     this.chart = createChart(this.graphDiv.nativeElement, {
-      width: window.innerWidth,
+      width: window.innerWidth * 0.8,
       height: window.innerHeight * 0.8,
       timeScale: {
         timeVisible: true,
@@ -45,7 +64,7 @@ export class CandleGraphTradingViewComponent implements OnInit {
   private draw() {
     if (this.chart) {
 
-      this.chart.resize(window.innerHeight * 0.8, window.innerWidth, false);
+      this.chart.resize(window.innerHeight * 0.8, window.innerWidth * 0.8, false);
 
       if (!this.candles) {
         this.candles = this.chart.addCandlestickSeries();
@@ -80,6 +99,7 @@ export class CandleGraphTradingViewComponent implements OnInit {
           value: x.volume
         };
       }));
+
     }
   }
 
