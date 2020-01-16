@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CandleSignalRService } from 'src/app/Services/CandleSignalR/candle-signal-r.service';
+import { Candle } from 'src/app/Models/Candle';
 
 @Component({
   selector: 'app-bot-view',
@@ -8,7 +9,7 @@ import { CandleSignalRService } from 'src/app/Services/CandleSignalR/candle-sign
 })
 export class BotViewComponent implements OnInit, OnDestroy {
 
-  public Data = [];
+  public Data: Candle[] = [];
 
   constructor(private candleSignalRService: CandleSignalRService) {
 
@@ -30,7 +31,9 @@ export class BotViewComponent implements OnInit, OnDestroy {
   }
 
   public priceChanged(price) {
-    console.log(price);
+    if (this.Data) {
+      this.Data[this.Data.length - 1].close = price;
+    }
   }
 
 }

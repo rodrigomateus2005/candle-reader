@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { CandleSignalRService } from './candle-signal-r.service';
 import * as signalR from '@aspnet/signalr';
 import { environment } from 'src/environments/environment';
+import { Candle } from 'src/app/Models/Candle';
 
 @Injectable()
 export class CandleSignalRCoreService extends CandleSignalRService {
@@ -31,7 +32,7 @@ export class CandleSignalRCoreService extends CandleSignalRService {
     });
   }
 
-  public getCandles(): Promise<any[]> {
+  public getCandles(): Promise<Candle[]> {
     return new Promise((resolve, reject) => {
       this.hubConnection.invoke('GetCandles').then(data => {
         resolve(data);
