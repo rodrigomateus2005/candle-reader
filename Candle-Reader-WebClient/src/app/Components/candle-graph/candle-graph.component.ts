@@ -92,12 +92,12 @@ export class CandleGraphComponent implements OnInit, AfterViewInit {
       const accessor = this.candlestick.accessor();
       const data = this.Data.map(function(d) {
         return {
-            date: d.time,
-            open: +d.open,
-            high: +d.high,
-            low: +d.low,
-            close: +d.close,
-            volume: +d.volume
+            date: d.Time,
+            open: +d.Open,
+            high: +d.High,
+            low: +d.Low,
+            close: +d.Close,
+            volume: +d.Volume
         };
     });
 
