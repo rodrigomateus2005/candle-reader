@@ -1,5 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CandleSignalRService } from 'src/app/Services/CandleSignalR/candle-signal-r.service';
+import { Candle } from 'src/app/Models/Candle';
+import { Quote } from 'src/app/Models/Quote';
 
 @Component({
   selector: 'app-bot-view',
@@ -8,18 +10,15 @@ import { CandleSignalRService } from 'src/app/Services/CandleSignalR/candle-sign
 })
 export class BotViewComponent implements OnInit, OnDestroy {
 
-  public Data = [];
+  public Data: Candle[] = [];
 
   constructor(private candleSignalRService: CandleSignalRService, public changeDetectorRef: ChangeDetectorRef) {
 
     candleSignalRService.conect().then(() => {
-      candleSignalRService.getCandles().then(data => {
-        this.Data = data;
-        this.changeDetectorRef.detectChanges();
-      });
+      this.atualizarCandles();
     });
 
-    candleSignalRService.priceChanged.subscribe(this.priceChanged);
+    candleSignalRService.priceChanged.subscribe((e) => this.priceChanged(e));
   }
 
   ngOnInit() {
@@ -30,8 +29,23 @@ export class BotViewComponent implements OnInit, OnDestroy {
     this.candleSignalRService.priceChanged.unsubscribe();
   }
 
-  public priceChanged(price) {
-    console.log(price);
+  public atualizarCandles() {
+    this.candleSignalRService.getCandles().then(data => {
+      this.Data = data;
+      this.changeDetectorRef.detectChanges();
+    });
+  }
+
+  public priceChanged(price: Quote) {
+    if (this.Data) {
+      const ultimoCandle = this.Data.slice(-1)[0];
+
+      if (price.time.getTime() > ultimoCandle.time.getTime() + (1000 * 60 * 15)) {
+        this.atualizarCandles();
+      } else {
+        ultimoCandle.close = price.ask;
+      }
+    }
   }
 
 }

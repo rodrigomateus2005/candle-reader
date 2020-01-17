@@ -7,12 +7,15 @@ import { CandleGraphComponent } from './Components/candle-graph/candle-graph.com
 import { BotViewComponent } from './Pages/bot-view/bot-view.component';
 import { CandleSignalRClassicService } from './Services/CandleSignalR/candle-signal-r-classic.service';
 import { CandleSignalRService } from './Services/CandleSignalR/candle-signal-r.service';
+import { CandleSignalRMockService } from './Services/CandleSignalR/candle-signal-r-mock.service';
+import { CandleGraphTradingViewComponent } from './Components/candle-graph-trading-view/candle-graph-trading-view.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     CandleGraphComponent,
-    BotViewComponent
+    BotViewComponent,
+    CandleGraphTradingViewComponent
   ],
   imports: [
     BrowserModule,
@@ -21,7 +24,7 @@ import { CandleSignalRService } from './Services/CandleSignalR/candle-signal-r.s
   providers: [
     {
       provide: CandleSignalRService,
-      useClass: CandleSignalRClassicService
+      useClass: CandleSignalRMockService
     }
   ],
   bootstrap: [AppComponent]

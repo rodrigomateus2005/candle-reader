@@ -2,6 +2,7 @@ import { Component, OnInit, ElementRef, AfterViewInit, Input } from '@angular/co
 import * as $ from 'jquery';
 import * as d3 from 'd3';
 import * as techan from 'techan';
+import { Candle } from 'src/app/Models/Candle';
 
 @Component({
   selector: 'app-candle-graph',
@@ -11,12 +12,12 @@ import * as techan from 'techan';
 export class CandleGraphComponent implements OnInit, AfterViewInit {
 
 
-  private _Data: any[];
-  public get Data(): any[] {
+  private _Data: Candle[];
+  public get Data(): Candle[] {
     return this._Data;
   }
   @Input()
-  public set Data(value: any[]) {
+  public set Data(value: Candle[]) {
     this._Data = value;
     this.draw();
   }
