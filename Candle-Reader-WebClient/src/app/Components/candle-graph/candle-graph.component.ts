@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, AfterViewInit, Input } from '@angular/core';
+import { Component, OnInit, ElementRef, AfterViewInit, Input, ViewChild } from '@angular/core';
 import * as $ from 'jquery';
 import * as d3 from 'd3';
 import * as techan from 'techan';
@@ -24,8 +24,11 @@ export class CandleGraphComponent implements OnInit, AfterViewInit {
     this.refreshData();
   }
 
+  @ViewChild('svg')
+  public svg: ElementRef;
+
   private candlestick: any;
-  private svg: any;
+  private svgD3: d3.Selection<SVGElement, unknown, null, undefined>;
   private zoomableInit: any;
 
   private x: any;
@@ -33,8 +36,11 @@ export class CandleGraphComponent implements OnInit, AfterViewInit {
   private xAxis: d3.Axis<d3.AxisDomain>;
   private yAxis: d3.Axis<number | { valueOf(): number; }>;
   private zoom: ZoomBehavior<Element, unknown>;
+  private crosshair: ZoomBehavior<Element, unknown>;
 
-  constructor(private elmentRef: ElementRef) { }
+  constructor() {
+
+  }
 
   ngOnInit() {
   }
@@ -58,17 +64,37 @@ export class CandleGraphComponent implements OnInit, AfterViewInit {
 
     const yAxis = d3.axisLeft(y);
 
+    // zoom
     const zoom = d3.zoom().on('zoom', () => this.onZoom());
 
-    let svg = d3.select($(this.elmentRef.nativeElement).find('svg')[0]);
+    // mouse
+    // const crosshair = techan.plot.crosshair()
+    //   .xScale(x)
+    //   .yScale(y)
+    //   .xAnnotation([timeAnnotation, timeTopAnnotation])
+    //   .yAnnotation([ohlcAnnotation, ohlcRightAnnotation])
+    //   .on("enter", enter)
+    //   .on("out", out)
+    //   .on("move", move);
+
+    let svg = d3.select(this.svg.nativeElement as SVGElement);
 
     svg = svg.attr('width', width + margin.left + margin.right)
       .attr('height', height + margin.top + margin.bottom)
       .append('g')
       .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
+    svg.append('clipPath')
+      .attr('id', 'clip')
+      .append('rect')
+      .attr('x', 0)
+      .attr('y', y(1))
+      .attr('width', width)
+      .attr('height', y(0) - y(1));
+
     svg.append('g')
-      .attr('class', 'candlestick');
+      .attr('class', 'candlestick')
+      .attr('clip-path', 'url(#clip)');
 
     svg.append('g')
       .attr('class', 'x axis')
@@ -83,8 +109,14 @@ export class CandleGraphComponent implements OnInit, AfterViewInit {
       .style('text-anchor', 'end')
       .text('Price ($)');
 
+    svg.append('rect')
+      .attr('class', 'pane')
+      .attr('width', width)
+      .attr('height', height)
+      .call(zoom);
 
-    this.svg = svg;
+
+    this.svgD3 = svg;
     this.candlestick = candlestick;
     this.x = x;
     this.y = y;
@@ -108,7 +140,7 @@ export class CandleGraphComponent implements OnInit, AfterViewInit {
   }
 
   private refreshData() {
-    if (this.svg) {
+    if (this.svgD3) {
       const accessor = this.candlestick.accessor();
       this.dataAccessor = this.Data.map(function (d) {
         return {
@@ -133,10 +165,10 @@ export class CandleGraphComponent implements OnInit, AfterViewInit {
   }
 
   private draw() {
-    if (this.svg) {
-      this.svg.selectAll('g.candlestick').datum(this.dataAccessor).call(this.candlestick);
-      this.svg.selectAll('g.x.axis').call(this.xAxis);
-      this.svg.selectAll('g.y.axis').call(this.yAxis);
+    if (this.svgD3) {
+      this.svgD3.selectAll('g.candlestick').datum(this.dataAccessor).call(this.candlestick);
+      this.svgD3.selectAll('g.x.axis').call(this.xAxis);
+      this.svgD3.selectAll('g.y.axis').call(this.yAxis);
     }
   }
 
