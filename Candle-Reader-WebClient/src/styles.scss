@@ -24,8 +24,21 @@ rect.pane {
   pointer-events: all;
 }
 
+.y.annotation.left path {
+  fill: #00AA00;
+}
+
+.y.annotation.right path {
+  fill: #FF0000;
+}
+
+.x.annotation path {
+  fill: #DDD80E;
+}
+
 .crosshair {
   cursor: crosshair;
+  fill: none;
 }
 
 .crosshair path.wire {
