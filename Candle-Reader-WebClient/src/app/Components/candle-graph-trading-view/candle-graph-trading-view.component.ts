@@ -1,4 +1,5 @@
-import { Component, OnInit, Input, ElementRef, ViewChild, IterableDiffer, IterableDiffers, DoCheck, KeyValueDiffer, KeyValueDiffers } from '@angular/core';
+import { Component, OnInit, Input, ElementRef,
+  ViewChild, IterableDiffer, IterableDiffers, DoCheck, KeyValueDiffer, KeyValueDiffers } from '@angular/core';
 
 import { createChart, IChartApi, ISeriesApi, BarData, HistogramData } from 'lightweight-charts';
 import { Candle } from 'src/app/Models/Candle';

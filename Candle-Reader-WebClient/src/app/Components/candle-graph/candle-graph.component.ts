@@ -3,6 +3,7 @@ import * as $ from 'jquery';
 import * as d3 from 'd3';
 import * as techan from 'techan';
 import { Candle } from 'src/app/Models/Candle';
+import { ZoomBehavior, ScaleLinear } from 'd3';
 
 @Component({
   selector: 'app-candle-graph',
@@ -11,6 +12,7 @@ import { Candle } from 'src/app/Models/Candle';
 })
 export class CandleGraphComponent implements OnInit, AfterViewInit {
 
+  private dataAccessor: any;
 
   private _Data: Candle[];
   public get Data(): Candle[] {
@@ -19,16 +21,18 @@ export class CandleGraphComponent implements OnInit, AfterViewInit {
   @Input()
   public set Data(value: Candle[]) {
     this._Data = value;
-    this.draw();
+    this.refreshData();
   }
 
   private candlestick: any;
   private svg: any;
+  private zoomableInit: any;
 
   private x: any;
-  private y: any;
+  private y: ScaleLinear<number, number>;
   private xAxis: d3.Axis<d3.AxisDomain>;
   private yAxis: d3.Axis<number | { valueOf(): number; }>;
+  private zoom: ZoomBehavior<Element, unknown>;
 
   constructor(private elmentRef: ElementRef) { }
 
@@ -54,6 +58,8 @@ export class CandleGraphComponent implements OnInit, AfterViewInit {
 
     const yAxis = d3.axisLeft(y);
 
+    const zoom = d3.zoom().on('zoom', () => this.onZoom());
+
     let svg = d3.select($(this.elmentRef.nativeElement).find('svg')[0]);
 
     svg = svg.attr('width', width + margin.left + margin.right)
@@ -78,36 +84,57 @@ export class CandleGraphComponent implements OnInit, AfterViewInit {
       .text('Price ($)');
 
 
-      this.svg = svg;
-      this.candlestick = candlestick;
-      this.x = x;
-      this.y = y;
-      this.xAxis = xAxis;
-      this.yAxis = yAxis;
+    this.svg = svg;
+    this.candlestick = candlestick;
+    this.x = x;
+    this.y = y;
+    this.xAxis = xAxis;
+    this.yAxis = yAxis;
+    this.zoom = zoom;
+
+    this.refreshData();
+  }
+
+  private onZoom() {
+    const rescaledY = d3.event.transform.rescaleY(this.y);
+    this.yAxis.scale(rescaledY);
+
+    this.candlestick.yScale(rescaledY);
+
+    // Emulates D3 behaviour, required for financetime due to secondary zoomable scale
+    this.x.zoomable().domain(d3.event.transform.rescaleX(this.zoomableInit).domain());
+
+    this.draw();
+  }
+
+  private refreshData() {
+    if (this.svg) {
+      const accessor = this.candlestick.accessor();
+      this.dataAccessor = this.Data.map(function (d) {
+        return {
+          date: d.time,
+          open: +d.open,
+          high: +d.high,
+          low: +d.low,
+          close: +d.close,
+          volume: +d.volume
+        };
+      });
+
+      this.dataAccessor.sort(function (a, b) { return d3.ascending(accessor.d(a), accessor.d(b)); });
+
+      this.x.domain(this.dataAccessor.map(accessor.d));
+      this.y.domain(techan.scale.plot.ohlc(this.dataAccessor, accessor).domain());
+
+      this.zoomableInit = this.x.zoomable().clamp(false).copy();
 
       this.draw();
+    }
   }
 
   private draw() {
     if (this.svg) {
-      const accessor = this.candlestick.accessor();
-      const data = this.Data.map(function(d) {
-        return {
-            date: d.Time,
-            open: +d.Open,
-            high: +d.High,
-            low: +d.Low,
-            close: +d.Close,
-            volume: +d.Volume
-        };
-    });
-
-      data.sort(function(a, b) { return d3.ascending(accessor.d(a), accessor.d(b)); });
-
-      this.x.domain(data.map(accessor.d));
-      this.y.domain(techan.scale.plot.ohlc(data, accessor).domain());
-
-      this.svg.selectAll('g.candlestick').datum(data).call(this.candlestick);
+      this.svg.selectAll('g.candlestick').datum(this.dataAccessor).call(this.candlestick);
       this.svg.selectAll('g.x.axis').call(this.xAxis);
       this.svg.selectAll('g.y.axis').call(this.yAxis);
     }
