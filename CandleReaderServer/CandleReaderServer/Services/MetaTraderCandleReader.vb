@@ -4,13 +4,11 @@ Imports MtApi5
 Public Class MetaTraderCandleReader
     Implements ICandleReader
 
-    'Private Const INSTRUMENTS_NAME As String = "WIN$"
-    Private Const INSTRUMENTS_NAME As String = "EURUSD"
     Private Const PORT As Integer = 8228
+    Private Const TIME_FRAME As ENUM_TIMEFRAMES = ENUM_TIMEFRAMES.PERIOD_M15
     Private _mtApiClient As MtApi5Client
 
-    Public Event PriceChanged As PriceChangedEventHandler Implements ICandleReader.PriceChanged
-    Private Property Clients As IHubCallerConnectionContext(Of Object) Implements ICandleReader.Clients
+    Private Property ICandleReader_OnPriceChanged As PriceChangedEventHandler Implements ICandleReader.OnPriceChanged
 
     Public Sub New()
         Me._mtApiClient = New MtApi5Client()
@@ -20,12 +18,15 @@ Public Class MetaTraderCandleReader
 
     Protected Overrides Sub Finalize()
         RemoveHandler Me._mtApiClient.ConnectionStateChanged, AddressOf Me.ConnectionStateChanged
+        RemoveHandler Me._mtApiClient.QuoteUpdate, AddressOf Me.QuoteUpdated
     End Sub
 
     Private Sub ConnectionStateChanged(ByVal sender As Object, ByVal e As Mt5ConnectionEventArgs)
         Console.WriteLine(e.ConnectionMessage)
         If e.Status = Mt5ConnectionState.Connected Then
             Me.OnConected()
+        ElseIf e.Status = Mt5ConnectionState.Disconnected Then
+            Me.OnDisconected()
         End If
     End Sub
 
@@ -33,14 +34,25 @@ Public Class MetaTraderCandleReader
 
     End Sub
 
+    Private Sub OnDisconected()
+        Me.Start()
+    End Sub
+
     Private Sub QuoteUpdated(ByVal sender As Object, ByVal e As Mt5QuoteEventArgs)
-        If e.Quote.Instrument = MetaTraderCandleReader.INSTRUMENTS_NAME Then
-            Me.OnPriceChanged(New PriceChangedEventArgs With {
-                                .Time = e.Quote.Time,
-                                .PrecoVenda = e.Quote.Bid,
-                                .PrecoCompra = e.Quote.Ask
-                          })
-        End If
+        Dim closes As Double() = {}
+
+        Dim ev = New PriceChangedEventArgs With {
+                            .Ativo = e.Quote.Instrument,
+                            .Time = e.Quote.Time,
+                            .PrecoVenda = e.Quote.Bid,
+                            .PrecoCompra = e.Quote.Ask
+                      }
+
+        Me._mtApiClient.CopyClose(e.Quote.Instrument, MetaTraderCandleReader.TIME_FRAME, 0, 1, closes)
+
+        ev.Fechamento = closes.FirstOrDefault()
+
+        Me.OnPriceChanged(ev)
     End Sub
 
     Public Sub Start()
@@ -48,6 +60,8 @@ Public Class MetaTraderCandleReader
     End Sub
 
     Private Function GetCandles(ByVal symbol As String, ByVal timeFrame As ENUM_TIMEFRAMES, ByVal count As Integer) As Candle()
+        If Me._mtApiClient.ConnectionState = Mt5ConnectionState.Disconnected Then Return Nothing
+
         Dim closes As Double() = {}
         Dim openings As Double() = {}
         Dim highs As Double() = {}
@@ -78,14 +92,19 @@ Public Class MetaTraderCandleReader
         Return retorno.ToArray()
     End Function
 
-    Public Function GetCandles200() As Candle() Implements ICandleReader.GetCandles200
-        Dim retorno = Me.GetCandles(MetaTraderCandleReader.INSTRUMENTS_NAME, ENUM_TIMEFRAMES.PERIOD_M15, 200)
+    Public Function GetAtivos() As String() Implements ICandleReader.GetAtivos
+        Return Me._mtApiClient.GetQuotes().Select(Function(q) q.Instrument).ToArray()
+    End Function
+
+    Public Function GetCandles200(ByVal ativo As String) As Candle() Implements ICandleReader.GetCandles200
+        Dim retorno = Me.GetCandles(ativo, MetaTraderCandleReader.TIME_FRAME, 200)
         Return retorno
     End Function
 
     Protected Overridable Sub OnPriceChanged(ByVal e As PriceChangedEventArgs)
-        RaiseEvent PriceChanged(Me, e)
-        Me.Clients?.Caller.SendCoreAsync("OnPriceChange", New Object() {e})
+        If Me.ICandleReader_OnPriceChanged IsNot Nothing Then
+            Me.ICandleReader_OnPriceChanged.Invoke(Me, e)
+        End If
     End Sub
 
 End Class

@@ -1,1 +1,5 @@
-<app-candle-graph [Data]="Data"></app-candle-graph>
+<select [(ngModel)]="AtivoSelecionado">
+    <option *ngFor="let ativo of Ativos" [value]="ativo">{{ativo}}</option>
+</select>
+
+<app-candle-graph [Data]="Data" [trendlines]="Trendlines"></app-candle-graph>

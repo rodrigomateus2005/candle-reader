@@ -8,15 +8,20 @@ Public Class BotHub
 
     Public Sub New(candleReader As ICandleReader)
         Me.candleReader = candleReader
+        Me.candleReader.OnPriceChanged = AddressOf OnPriceChanged
     End Sub
 
-    Public Overrides Function OnConnected() As Task
-        Me.candleReader.Clients = Me.Clients
-        Return MyBase.OnConnected()
+    Public Function GetAtivos() As String()
+        Return Me.candleReader.GetAtivos()
     End Function
 
-    Public Function GetCandles() As Candle()
-        Return Me.candleReader.GetCandles200()
+    Public Function GetCandles(ativo As String) As Candle()
+        Return Me.candleReader.GetCandles200(ativo)
     End Function
+
+    Public Shared Sub OnPriceChanged(sender As Object, e As PriceChangedEventArgs)
+        Dim context = GlobalHost.ConnectionManager.GetHubContext(Of BotHub)()
+        context.Clients.All.onPriceChanged(e)
+    End Sub
 
 End Class

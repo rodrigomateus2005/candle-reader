@@ -1,9 +1,13 @@
-import { Component, OnInit, ElementRef, AfterViewInit, Input, ViewChild } from '@angular/core';
-import * as $ from 'jquery';
-import * as d3 from 'd3';
-import * as techan from 'techan';
+import { Component, OnInit, ElementRef, AfterViewInit, Input, ViewChild, KeyValueDiffers, KeyValueDiffer, DoCheck } from '@angular/core';
 import { Candle } from 'src/app/Models/Candle';
 import { ZoomBehavior, ScaleLinear } from 'd3';
+import { Trendline } from 'src/app/Models/Trendline';
+
+// import * as d3 from 'd3';
+// import * as techan from 'techan';
+declare const d3: any;
+declare const techan: any;
+
 
 export interface Margin {
   top: number;
@@ -22,7 +26,7 @@ export interface Size {
   templateUrl: './candle-graph.component.html',
   styleUrls: ['./candle-graph.component.scss']
 })
-export class CandleGraphComponent implements OnInit, AfterViewInit {
+export class CandleGraphComponent implements OnInit, AfterViewInit, DoCheck {
 
   private dataAccessor: any;
 
@@ -33,6 +37,16 @@ export class CandleGraphComponent implements OnInit, AfterViewInit {
   @Input()
   public set Data(value: Candle[]) {
     this._Data = value;
+    this.refreshData();
+  }
+
+  private _trendlines: Trendline[];
+  public get trendlines(): Trendline[] {
+    return this._trendlines;
+  }
+  @Input()
+  public set trendlines(value: Trendline[]) {
+    this._trendlines = value;
     this.refreshData();
   }
 
@@ -51,19 +65,27 @@ export class CandleGraphComponent implements OnInit, AfterViewInit {
   private candlestick: any;
   private svgD3: d3.Selection<SVGElement, unknown, null, undefined>;
   private zoomableInit: any;
+  private yInit: any;
 
   private x: any;
   private y: ScaleLinear<number, number>;
   private xAxis: d3.Axis<d3.AxisDomain>;
   private yAxis: d3.Axis<number | { valueOf(): number; }>;
   private zoom: ZoomBehavior<Element, unknown>;
+  private lastZoomX: any;
+  private lastZoomY: any;
 
   private ohlcAnnotation: any;
   private timeAnnotation: any;
+  private closeAnnotation: any;
   private crosshair: any;
   private coordsText: any;
 
-  constructor() {
+  private trendlinePlot: any;
+
+  private lastCandleDiffer: KeyValueDiffer<string, any>;
+
+  constructor(private kvd: KeyValueDiffers) {
     this.margin = {
       top: 20,
       right: 50,
@@ -75,6 +97,17 @@ export class CandleGraphComponent implements OnInit, AfterViewInit {
       width: 960,
       height: 500
     };
+
+    this.lastCandleDiffer = kvd.find({}).create();
+  }
+
+  ngDoCheck(): void {
+    if (this.Data) {
+      const lastCandleChanges = this.lastCandleDiffer.diff(this.Data.slice(-1)[0]);
+      if (lastCandleChanges) {
+        this.refreshData();
+      }
+    }
   }
 
   ngOnInit() {
@@ -83,7 +116,8 @@ export class CandleGraphComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     this.createChart();
     this.createZoom();
-    // this.createCrosshair();
+    this.createCrosshair();
+    this.createTrendlines();
     this.refreshData();
   }
 
@@ -101,6 +135,13 @@ export class CandleGraphComponent implements OnInit, AfterViewInit {
     const xAxis = d3.axisBottom(x);
 
     const yAxis = d3.axisRight(y);
+
+    const closeAnnotation = techan.plot.axisannotation()
+      .orient('right')
+      .accessor(candlestick.accessor())
+      .axis(yAxis)
+      .format(d3.format(',.5f'))
+      .translate([this.sizeInner.width, 0]);
 
     let svgD3 = d3.select(this.svg.nativeElement as SVGElement);
 
@@ -136,12 +177,16 @@ export class CandleGraphComponent implements OnInit, AfterViewInit {
       .style('text-anchor', 'end')
       .text('Preço ($)');
 
+    svgD3.append('g')
+      .attr('class', 'closeValue annotation up');
+
     this.svgD3 = svgD3;
     this.candlestick = candlestick;
     this.x = x;
     this.y = y;
     this.xAxis = xAxis;
     this.yAxis = yAxis;
+    this.closeAnnotation = closeAnnotation;
   }
 
   /**ZOOM INIT */
@@ -162,13 +207,13 @@ export class CandleGraphComponent implements OnInit, AfterViewInit {
   }
 
   private onZoom() {
-    const rescaledY = d3.event.transform.rescaleY(this.y);
-    this.yAxis.scale(rescaledY);
-
-    this.candlestick.yScale(rescaledY);
-
     // Emulates D3 behaviour, required for financetime due to secondary zoomable scale
-    this.x.zoomable().domain(d3.event.transform.rescaleX(this.zoomableInit).domain());
+
+    this.lastZoomX = d3.event.transform.rescaleX(this.zoomableInit).domain();
+    this.lastZoomY = d3.event.transform.rescaleY(this.yInit).domain();
+
+    this.x.zoomable().domain(this.lastZoomX);
+    this.y.domain(this.lastZoomY);
 
     this.draw();
   }
@@ -181,44 +226,23 @@ export class CandleGraphComponent implements OnInit, AfterViewInit {
       .axis(this.yAxis)
       .orient('right')
       .translate([this.sizeInner.width, 0])
-      .format(d3.format(',.2f'));
+      .format(d3.format(',.0f'));
 
     const timeAnnotation = techan.plot.axisannotation()
       .axis(this.xAxis)
       .orient('bottom')
-      .format(d3.timeFormat('%Y-%m-%d'))
-      .width(65)
+      .format(d3.timeFormat('%Y-%m-%d %H:%M'))
+      .width(135)
       .translate([0, this.sizeInner.height]);
-
-    const xTopAxis = d3.axisTop(this.x);
-    const yLeftAxis = d3.axisLeft(this.y);
-
-    const timeTopAnnotation = techan.plot.axisannotation()
-      .axis(xTopAxis)
-      .orient('top');
-
-    const ohlcLeftAnnotation = techan.plot.axisannotation()
-      .axis(yLeftAxis)
-      .orient('left')
-      .format(d3.format(',.2f'));
-
 
     const crosshair = techan.plot.crosshair()
       .xScale(this.x)
       .yScale(this.y)
-      .xAnnotation([timeAnnotation, timeTopAnnotation])
-      .yAnnotation([ohlcLeftAnnotation, ohlcAnnotation])
+      .xAnnotation([timeAnnotation])
+      .yAnnotation([ohlcAnnotation])
       .on('enter', () => this.crosshairEnter())
       .on('out', () => this.crosshairOut())
       .on('move', (coords) => this.crosshairMove(coords));
-
-    this.svgD3.append('g')
-      .attr('class', 'x axis')
-      .call(xTopAxis);
-
-    this.svgD3.append('g')
-      .attr('class', 'y axis')
-      .call(yLeftAxis);
 
     const coordsText = this.svgD3.append('text')
       .style('text-anchor', 'end')
@@ -227,19 +251,9 @@ export class CandleGraphComponent implements OnInit, AfterViewInit {
       .attr('y', 15);
 
     this.svgD3.append('g')
-      .attr('class', 'x annotation top')
-      .datum([{ value: this.x.domain()[80] }])
-      .call(timeTopAnnotation);
-
-    this.svgD3.append('g')
       .attr('class', 'x annotation bottom')
       .datum([{ value: this.x.domain()[30] }])
       .call(timeAnnotation);
-
-    this.svgD3.append('g')
-      .attr('class', 'y annotation left')
-      .datum([{ value: 74 }, { value: 67.5 }, { value: 58 }, { value: 40 }]) // 74 should not be rendered
-      .call(ohlcLeftAnnotation);
 
     this.svgD3.append('g')
       .attr('class', 'y annotation right')
@@ -250,7 +264,8 @@ export class CandleGraphComponent implements OnInit, AfterViewInit {
       .attr('class', 'crosshair')
       .datum({ x: this.x.domain()[80], y: 67.5 })
       .call(crosshair)
-      .each((d) => { this.crosshairMove(d); }); // Display the current data
+      .each((d) => { this.crosshairMove(d); })// Display the current data
+      .call(this.zoom);
 
     this.crosshair = crosshair;
     this.coordsText = coordsText;
@@ -276,8 +291,37 @@ export class CandleGraphComponent implements OnInit, AfterViewInit {
 
   /** crosshair end */
 
+  /** trendlines init */
+
+  private createTrendlines() {
+    const trendlinePlot = techan.plot.trendline()
+      .xScale(this.x)
+      .yScale(this.y);
+    // .on('mouseenter', (d) => { this.trendlineEnter(d); })
+    // .on('mouseout', (d) => { this.trendlineOut(d); })
+    // .on('drag', (d) => { this.trendlineDrag(d); });
+
+    this.svgD3.append('g')
+      .attr('class', 'trendlines')
+      .attr('clip-path', 'url(#clip)');
+
+    this.trendlinePlot = trendlinePlot;
+  }
+
+  private trendlineEnter(d: any) {
+  }
+
+  private trendlineOut(d: any) {
+  }
+
+  private trendlineDrag(d: any) {
+  }
+
+  /** trendlines end */
+
   private refreshData() {
     if (this.svgD3) {
+
       const accessor = this.candlestick.accessor();
       this.dataAccessor = this.Data.map(function (d) {
         return {
@@ -292,10 +336,16 @@ export class CandleGraphComponent implements OnInit, AfterViewInit {
 
       this.dataAccessor.sort(function (a, b) { return d3.ascending(accessor.d(a), accessor.d(b)); });
 
-      this.x.domain(this.dataAccessor.map(accessor.d));
+      this.x.domain(techan.scale.plot.time(this.dataAccessor).domain());
       this.y.domain(techan.scale.plot.ohlc(this.dataAccessor, accessor).domain());
 
       this.zoomableInit = this.x.zoomable().clamp(false).copy();
+      this.yInit = this.y.copy();
+
+      if (this.lastZoomX && this.lastZoomY) {
+        this.x.zoomable().domain(this.lastZoomX);
+        this.y.domain(this.lastZoomY);
+      }
 
       this.draw();
     }
@@ -306,6 +356,21 @@ export class CandleGraphComponent implements OnInit, AfterViewInit {
       this.svgD3.selectAll('g.candlestick').datum(this.dataAccessor).call(this.candlestick);
       this.svgD3.selectAll('g.x.axis').call(this.xAxis);
       this.svgD3.selectAll('g.y.axis').call(this.yAxis);
+
+      if (this.dataAccessor[this.dataAccessor.length - 1]) {
+        this.svgD3.select('g.closeValue.annotation')
+          .datum([this.dataAccessor[this.dataAccessor.length - 1]])
+          .call(this.closeAnnotation);
+
+        this.svgD3.select('g.closeValue.annotation')
+          .call(this.closeAnnotation.refresh);
+      }
+
+      this.svgD3.selectAll('g.trendlines')
+        .datum(this.trendlines)
+        .call(this.trendlinePlot)
+        .call(this.trendlinePlot.drag)
+        .call(this.trendlinePlot.refresh);
     }
   }
 

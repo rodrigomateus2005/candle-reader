@@ -20,6 +20,14 @@ export class CandleSignalRClassicService extends CandleSignalRService {
       this.hubConnection = $.hubConnection(environment.urlWebApi + '/signalr', { useDefaultPath: false });
 
       this.hubProxy = this.hubConnection.createHubProxy('botHub');
+
+      this.hubProxy.on('onPriceChanged', (e) => {
+        this.onPriceChange(<Quote>{
+          precoCompra: e.PrecoCompra,
+          precoVenda: e.PrecoVenda,
+          time: new Date(e.Time)
+        });
+      });
     }
   }
 
@@ -33,10 +41,25 @@ export class CandleSignalRClassicService extends CandleSignalRService {
     });
   }
 
-  public getCandles(): Promise<Candle[]> {
+  public getAtivos(): Promise<string[]> {
     return new Promise((resolve, reject) => {
-      this.hubProxy.invoke('getCandles').done(data => {
+      this.hubProxy.invoke('getAtivos').done(data => {
         resolve(data);
+      }).fail(reject);
+    });
+  }
+
+  public getCandles(ativo: string): Promise<Candle[]> {
+    return new Promise((resolve, reject) => {
+      this.hubProxy.invoke('getCandles', ativo).done(data => {
+        resolve(data.map(x => <Candle>{
+          time: new Date(x.Time),
+          close: x.Close,
+          open: x.Open,
+          volume: x.Volume,
+          high: x.High,
+          low: x.Low,
+        }));
       }).fail(reject);
     });
   }

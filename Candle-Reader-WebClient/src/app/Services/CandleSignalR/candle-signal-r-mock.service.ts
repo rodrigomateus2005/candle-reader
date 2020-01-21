@@ -23,16 +23,18 @@ export class CandleSignalRMockService extends CandleSignalRService {
         const lastCandle = this.candles.slice(-1)[0];
         this.quote = {
           time: lastCandle.time,
-          ask: lastCandle.close,
-          bid: lastCandle.close
+          precoCompra: lastCandle.close,
+          precoVenda: lastCandle.close,
+          ativo: 'EURUSD',
+          fechamento: lastCandle.close
         };
 
       }
 
       const diferenca = (Math.ceil(Math.random() * 10) - 5) / 100;
 
-      this.quote.ask += diferenca;
-      this.quote.bid += diferenca;
+      this.quote.precoCompra += diferenca;
+      this.quote.precoVenda += diferenca;
       this.quote.time = new Date(this.quote.time.getTime() + tempoLoop);
 
       this.onPriceChange(this.quote);
@@ -44,8 +46,12 @@ export class CandleSignalRMockService extends CandleSignalRService {
     return Promise.resolve();
   }
 
-  public getCandles(): Promise<Candle[]> {
+  public getCandles(ativo: string): Promise<Candle[]> {
     return Promise.resolve(this.candles);
+  }
+
+  public getAtivos(): Promise<string[]> {
+    return Promise.resolve(['EURUSD']);
   }
 
   private onPriceChange(price: Quote) {

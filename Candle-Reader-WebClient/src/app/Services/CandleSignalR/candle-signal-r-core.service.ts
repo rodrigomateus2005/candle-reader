@@ -33,9 +33,17 @@ export class CandleSignalRCoreService extends CandleSignalRService {
     });
   }
 
-  public getCandles(): Promise<Candle[]> {
+  public getAtivos(): Promise<string[]> {
     return new Promise((resolve, reject) => {
-      this.hubConnection.invoke('GetCandles').then(data => {
+      this.hubConnection.invoke('GetAtivos').then(data => {
+        resolve(data);
+      }).catch(reject);
+    });
+  }
+
+  public getCandles(ativo: string): Promise<Candle[]> {
+    return new Promise((resolve, reject) => {
+      this.hubConnection.invoke('GetCandles', ativo).then(data => {
         resolve(data);
       }).catch(reject);
     });

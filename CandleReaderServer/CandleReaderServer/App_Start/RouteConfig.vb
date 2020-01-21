@@ -16,5 +16,7 @@ Public Module RouteConfig
             defaults:=New With {.controller = "Home", .action = "Index", .id = UrlParameter.Optional}
         )
 
+        routes.MapMvcAttributeRoutes()
+
     End Sub
 End Module

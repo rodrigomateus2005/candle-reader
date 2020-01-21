@@ -13,9 +13,17 @@ Namespace Controllers
         End Sub
 
         <HttpGet()>
+        <ActionName("GetAtivos")>
+        <Route("GetAtivos")>
+        Public Function GetAtivos() As String()
+            Return Me.candleReader.GetAtivos()
+        End Function
+
+        <HttpGet()>
         <ActionName("GetCandles")>
-        Public Function GetCandles() As Candle()
-            Return Me.candleReader.GetCandles200()
+        <Route("GetCandles")>
+        Public Function GetCandles(ativo As String) As Candle()
+            Return Me.candleReader.GetCandles200(ativo)
         End Function
 
     End Class

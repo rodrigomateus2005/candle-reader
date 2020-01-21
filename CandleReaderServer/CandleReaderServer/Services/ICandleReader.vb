@@ -1,20 +1,20 @@
-﻿Imports Microsoft.AspNet.SignalR.Hubs
+﻿Public Interface ICandleReader
 
-Public Interface ICandleReader
-    Event PriceChanged As PriceChangedEventHandler
+    Property OnPriceChanged As PriceChangedEventHandler
 
-    Property Clients As IHubCallerConnectionContext(Of Object)
-
-    Function GetCandles200() As Candle()
+    Function GetAtivos() As String()
+    Function GetCandles200(ByVal ativo As String) As Candle()
 End Interface
 
 Public Delegate Sub PriceChangedEventHandler(sender As Object, e As PriceChangedEventArgs)
 
 Public Class PriceChangedEventArgs
     Inherits EventArgs
+    Public Property Fechamento As Decimal
     Public Property PrecoCompra As Decimal
     Public Property PrecoVenda As Decimal
     Public Property Time As DateTime
+    Public Property Ativo As String
 End Class
 
 Public Class Candle

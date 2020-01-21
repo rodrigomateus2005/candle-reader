@@ -1,5 +1,7 @@
 export interface Quote {
   time: Date;
-  ask: number;
-  bid: number;
+  precoCompra: number;
+  precoVenda: number;
+  fechamento: number;
+  ativo: string;
 }
