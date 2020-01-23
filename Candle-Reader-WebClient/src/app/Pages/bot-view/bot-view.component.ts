@@ -6,6 +6,15 @@ import { Trendline } from 'src/app/Models/Trendline';
 
 import * as moment from 'moment';
 
+export enum BaseAngulo {
+  low,
+  close,
+  mediaFechamentos,
+  mediaMaximas,
+  open,
+  high
+}
+
 @Component({
   selector: 'app-bot-view',
   templateUrl: './bot-view.component.html',
@@ -195,6 +204,59 @@ export class BotViewComponent implements OnInit, OnDestroy {
         this.changeDetectorRef.detectChanges();
       }
     }
+  }
+
+  getReversoes(data: Candle[]): any {
+    const retorno = [];
+
+    let candleAnterior: Candle = null;
+    for (const candle of data) {
+      if (!candleAnterior) {
+        candleAnterior = candle;
+      }
+    }
+
+    return retorno;
+  }
+
+  getAnguloEntreCandles(candleA: Candle, candleB: Candle, distancia: number, base: BaseAngulo): number {
+    if (!candleA || !candleB || !distancia) {
+      return 0;
+    }
+
+    let catetoOposto = 0;
+
+    switch (base) {
+      case BaseAngulo.low:
+        catetoOposto = candleB.low - candleA.low;
+        break;
+      case BaseAngulo.close:
+        catetoOposto = candleB.close - candleA.close;
+        break;
+      case BaseAngulo.mediaMaximas:
+        const medMaxA = (candleA.low + candleA.high) / 2;
+        const medMaxB = (candleB.low + candleB.high) / 2;
+
+        catetoOposto = medMaxB - medMaxA;
+        break;
+      case BaseAngulo.open:
+        catetoOposto = candleB.open - candleA.open;
+        break;
+      case BaseAngulo.high:
+        catetoOposto = candleB.high - candleA.high;
+        break;
+      default:
+        const medFecA = (candleA.close + candleA.open) / 2;
+        const medFecB = (candleB.close + candleB.open) / 2;
+
+        catetoOposto = medFecB - medFecA;
+        break;
+    }
+
+    const hipotenusa = Math.sqrt(Math.pow(catetoOposto, 2) + Math.pow(distancia, 2));
+    const angulo = Math.asin(catetoOposto / hipotenusa);
+
+    return angulo;
   }
 
 }
