@@ -16,6 +16,16 @@ export enum BaseAngulo {
   high
 }
 
+export enum TipoReversao {
+  topo,
+  fundo
+}
+
+export interface Reversao {
+  candle: Candle;
+  tipo: TipoReversao;
+}
+
 @Component({
   selector: 'app-bot-view',
   templateUrl: './bot-view.component.html',
@@ -243,9 +253,30 @@ export class BotViewComponent implements OnInit, OnDestroy {
 
     let candleAnterior: Candle = null;
     for (const candle of data) {
-      if (!candleAnterior) {
-        candleAnterior = candle;
+      if (candleAnterior) {
+        const angulo = this.getAnguloEntreCandles(candle, candleAnterior, 1, BaseAngulo.mediaFechamentos);
+
+        if (retorno.length === 0) {
+          retorno.push({
+            candle: candle,
+            angulo: angulo
+          });
+        } else {
+          const ultimaReversao = retorno[retorno.length - 1];
+
+          if (angulo && angulo > 0 !== ultimaReversao.angulo > 0) {
+            retorno.push(
+              {
+                candle: candle,
+                angulo: angulo,
+                tipo: angulo > 0 ? TipoReversao.fundo : TipoReversao.topo
+              }
+            );
+          }
+        }
       }
+
+      candleAnterior = candle;
     }
 
     return retorno;
