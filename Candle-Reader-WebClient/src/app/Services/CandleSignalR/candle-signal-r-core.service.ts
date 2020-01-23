@@ -4,6 +4,7 @@ import * as signalR from '@aspnet/signalr';
 import { environment } from 'src/environments/environment';
 import { Candle } from 'src/app/Models/Candle';
 import { Quote } from 'src/app/Models/Quote';
+import { Ativo } from 'src/app/Models/Ativo';
 
 @Injectable()
 export class CandleSignalRCoreService extends CandleSignalRService {
@@ -33,7 +34,7 @@ export class CandleSignalRCoreService extends CandleSignalRService {
     });
   }
 
-  public getAtivos(): Promise<string[]> {
+  public getAtivos(): Promise<Ativo[]> {
     return new Promise((resolve, reject) => {
       this.hubConnection.invoke('GetAtivos').then(data => {
         resolve(data);
@@ -41,9 +42,9 @@ export class CandleSignalRCoreService extends CandleSignalRService {
     });
   }
 
-  public getCandles(ativo: string): Promise<Candle[]> {
+  public getCandles(ativo: string, timeFrame: number): Promise<Candle[]> {
     return new Promise((resolve, reject) => {
-      this.hubConnection.invoke('GetCandles', ativo).then(data => {
+      this.hubConnection.invoke('GetCandles', ativo, timeFrame).then(data => {
         resolve(data);
       }).catch(reject);
     });

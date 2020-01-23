@@ -256,6 +256,8 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Hubs\BotHub.vb" />
+    <Compile Include="Models\Ativo.vb" />
+    <Compile Include="Models\Candle.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -317,7 +319,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Models\" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <PropertyGroup>

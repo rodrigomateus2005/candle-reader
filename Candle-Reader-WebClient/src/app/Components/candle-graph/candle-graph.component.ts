@@ -2,6 +2,7 @@ import { Component, OnInit, ElementRef, AfterViewInit, Input, ViewChild, KeyValu
 import { Candle } from 'src/app/Models/Candle';
 import { ZoomBehavior, ScaleLinear } from 'd3';
 import { Trendline } from 'src/app/Models/Trendline';
+import { Ativo } from 'src/app/Models/Ativo';
 
 // import * as d3 from 'd3';
 // import * as techan from 'techan';
@@ -48,6 +49,15 @@ export class CandleGraphComponent implements OnInit, AfterViewInit, DoCheck {
   public set trendlines(value: Trendline[]) {
     this._trendlines = value;
     this.refreshData();
+  }
+
+  private _ativo: Ativo;
+  public get ativo(): Ativo {
+    return this._ativo;
+  }
+  @Input()
+  public set ativo(value: Ativo) {
+    this._ativo = value;
   }
 
   @ViewChild('svg')
@@ -226,7 +236,13 @@ export class CandleGraphComponent implements OnInit, AfterViewInit, DoCheck {
       .axis(this.yAxis)
       .orient('right')
       .translate([this.sizeInner.width, 0])
-      .format(d3.format(',.0f'));
+      .format((d) => {
+        let digits = 0;
+        if (this.ativo) {
+          digits = this.ativo.digitos;
+        }
+        return d3.format('.' + digits + 'f')(d);
+      });
 
     const timeAnnotation = techan.plot.axisannotation()
       .axis(this.xAxis)
@@ -296,10 +312,10 @@ export class CandleGraphComponent implements OnInit, AfterViewInit, DoCheck {
   private createTrendlines() {
     const trendlinePlot = techan.plot.trendline()
       .xScale(this.x)
-      .yScale(this.y);
-    // .on('mouseenter', (d) => { this.trendlineEnter(d); })
-    // .on('mouseout', (d) => { this.trendlineOut(d); })
-    // .on('drag', (d) => { this.trendlineDrag(d); });
+      .yScale(this.y)
+      .on('mouseenter', (d) => { this.trendlineEnter(d); })
+      .on('mouseout', (d) => { this.trendlineOut(d); })
+      .on('drag', (d) => { this.trendlineDrag(d); });
 
     this.svgD3.append('g')
       .attr('class', 'trendlines')

@@ -11,12 +11,16 @@ Public Class BotHub
         Me.candleReader.OnPriceChanged = AddressOf OnPriceChanged
     End Sub
 
-    Public Function GetAtivos() As String()
+    Protected Overrides Sub Finalize()
+
+    End Sub
+
+    Public Function GetAtivos() As Ativo()
         Return Me.candleReader.GetAtivos()
     End Function
 
-    Public Function GetCandles(ativo As String) As Candle()
-        Return Me.candleReader.GetCandles200(ativo)
+    Public Function GetCandles(ativo As String, ByVal timeFrame As Integer) As Candle()
+        Return Me.candleReader.GetCandles200(ativo, timeFrame)
     End Function
 
     Public Shared Sub OnPriceChanged(sender As Object, e As PriceChangedEventArgs)

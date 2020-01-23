@@ -5,6 +5,7 @@ import { Quote } from 'src/app/Models/Quote';
 import { Trendline } from 'src/app/Models/Trendline';
 
 import * as moment from 'moment';
+import { Ativo } from 'src/app/Models/Ativo';
 
 @Component({
   selector: 'app-bot-view',
@@ -13,19 +14,41 @@ import * as moment from 'moment';
 })
 export class BotViewComponent implements OnInit, OnDestroy {
 
-  private _AtivoSelecionado: string;
-  public get AtivoSelecionado(): string {
+  private _AtivoSelecionado: Ativo;
+  public get AtivoSelecionado(): Ativo {
     return this._AtivoSelecionado;
   }
-  public set AtivoSelecionado(value: string) {
+  public set AtivoSelecionado(value: Ativo) {
     this._AtivoSelecionado = value;
     this.atualizarCandles();
   }
-  public Ativos: string[];
+  private _TimeScale: any;
+  public get TimeScale(): any {
+    return this._TimeScale;
+  }
+  public set TimeScale(value: any) {
+    this._TimeScale = value;
+    this.atualizarCandles();
+  }
+
+  public Ativos: Ativo[];
   public Data: Candle[] = [];
   public Trendlines: Trendline[] = [];
+  public TimeScales = [];
 
   constructor(private candleSignalRService: CandleSignalRService, public changeDetectorRef: ChangeDetectorRef) {
+
+    this.TimeScales = [
+      {
+        Nome: 'M1',
+        Valor: 1
+      },
+      {
+        Nome: 'M15',
+        Valor: 15
+      }
+    ];
+    this.TimeScale = this.TimeScales[1];
 
     candleSignalRService.conect().then(() => {
       this.getAtivos();
@@ -53,7 +76,12 @@ export class BotViewComponent implements OnInit, OnDestroy {
   }
 
   public atualizarCandles() {
-    this.candleSignalRService.getCandles(this.AtivoSelecionado).then(data => {
+    if (!this.AtivoSelecionado) {
+      this.Data = [];
+      return;
+    }
+
+    this.candleSignalRService.getCandles(this.AtivoSelecionado.nome, this.TimeScale.Valor).then(data => {
       this.Data = data;
       const trendlines: Trendline[] = [];
 
@@ -175,10 +203,14 @@ export class BotViewComponent implements OnInit, OnDestroy {
   }
 
   public priceChanged(price: Quote) {
-    if (this.Data && price && price.ativo === this.AtivoSelecionado) {
+    if (this.Data && price && price.ativo === this.AtivoSelecionado.nome) {
       const ultimoCandle = this.Data.slice(-1)[0];
 
-      if (price.time.getTime() > ultimoCandle.time.getTime() + (1000 * 60 * 15)) {
+      if (!ultimoCandle) {
+        return;
+      }
+
+      if (price.time.getTime() > ultimoCandle.time.getTime() + (1000 * 60 * this.TimeScale.Valor)) {
         this.atualizarCandles();
       } else {
         const preco = price.fechamento;

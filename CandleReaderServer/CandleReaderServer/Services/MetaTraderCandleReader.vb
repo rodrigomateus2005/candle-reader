@@ -5,8 +5,9 @@ Public Class MetaTraderCandleReader
     Implements ICandleReader
 
     Private Const PORT As Integer = 8228
-    Private Const TIME_FRAME As ENUM_TIMEFRAMES = ENUM_TIMEFRAMES.PERIOD_M15
     Private _mtApiClient As MtApi5Client
+
+    Private Ativos As Ativo()
 
     Private Property ICandleReader_OnPriceChanged As PriceChangedEventHandler Implements ICandleReader.OnPriceChanged
 
@@ -31,7 +32,19 @@ Public Class MetaTraderCandleReader
     End Sub
 
     Private Sub OnConected()
+        Dim quotes = Me._mtApiClient.GetQuotes().ToArray()
 
+        Dim ativos As New List(Of Ativo)
+        For Each quote In quotes
+            Dim ativo As New Ativo
+
+            ativo.Nome = quote.Instrument
+            ativo.Digitos = Me._mtApiClient.SymbolInfoInteger(quote.Instrument, ENUM_SYMBOL_INFO_INTEGER.SYMBOL_DIGITS)
+
+            ativos.Add(ativo)
+        Next
+
+        Me.Ativos = ativos.ToArray
     End Sub
 
     Private Sub OnDisconected()
@@ -48,7 +61,7 @@ Public Class MetaTraderCandleReader
                             .PrecoCompra = e.Quote.Ask
                       }
 
-        Me._mtApiClient.CopyClose(e.Quote.Instrument, MetaTraderCandleReader.TIME_FRAME, 0, 1, closes)
+        Me._mtApiClient.CopyClose(e.Quote.Instrument, ENUM_TIMEFRAMES.PERIOD_M1, 0, 1, closes)
 
         ev.Fechamento = closes.FirstOrDefault()
 
@@ -92,12 +105,18 @@ Public Class MetaTraderCandleReader
         Return retorno.ToArray()
     End Function
 
-    Public Function GetAtivos() As String() Implements ICandleReader.GetAtivos
-        Return Me._mtApiClient.GetQuotes().Select(Function(q) q.Instrument).ToArray()
+    Public Function GetAtivos() As Ativo() Implements ICandleReader.GetAtivos
+        Return Me.Ativos
     End Function
 
-    Public Function GetCandles200(ByVal ativo As String) As Candle() Implements ICandleReader.GetCandles200
-        Dim retorno = Me.GetCandles(ativo, MetaTraderCandleReader.TIME_FRAME, 200)
+    Public Function GetCandles200(ByVal ativo As String, ByVal timeFrame As Integer) As Candle() Implements ICandleReader.GetCandles200
+        Dim timeFrameEnum As ENUM_TIMEFRAMES
+        If timeFrame = 1 Then
+            timeFrameEnum = ENUM_TIMEFRAMES.PERIOD_M1
+        Else
+            timeFrameEnum = ENUM_TIMEFRAMES.PERIOD_M15
+        End If
+        Dim retorno = Me.GetCandles(ativo, timeFrameEnum, 200)
         Return retorno
     End Function
 

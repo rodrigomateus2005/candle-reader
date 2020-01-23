@@ -15,15 +15,15 @@ Namespace Controllers
         <HttpGet()>
         <ActionName("GetAtivos")>
         <Route("GetAtivos")>
-        Public Function GetAtivos() As String()
+        Public Function GetAtivos() As Ativo()
             Return Me.candleReader.GetAtivos()
         End Function
 
         <HttpGet()>
         <ActionName("GetCandles")>
         <Route("GetCandles")>
-        Public Function GetCandles(ativo As String) As Candle()
-            Return Me.candleReader.GetCandles200(ativo)
+        Public Function GetCandles(ativo As String, ByVal timeFrame As Integer) As Candle()
+            Return Me.candleReader.GetCandles200(ativo, timeFrame)
         End Function
 
     End Class

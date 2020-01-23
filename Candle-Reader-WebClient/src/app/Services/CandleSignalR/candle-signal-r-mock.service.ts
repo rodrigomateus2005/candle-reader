@@ -4,6 +4,7 @@ import * as signalR from '@aspnet/signalr';
 import { environment } from 'src/environments/environment';
 import { Candle } from 'src/app/Models/Candle';
 import { Quote } from 'src/app/Models/Quote';
+import { Ativo } from 'src/app/Models/Ativo';
 
 @Injectable()
 export class CandleSignalRMockService extends CandleSignalRService {
@@ -46,12 +47,15 @@ export class CandleSignalRMockService extends CandleSignalRService {
     return Promise.resolve();
   }
 
-  public getCandles(ativo: string): Promise<Candle[]> {
+  public getCandles(ativo: string, timeFrame: number): Promise<Candle[]> {
     return Promise.resolve(this.candles);
   }
 
-  public getAtivos(): Promise<string[]> {
-    return Promise.resolve(['EURUSD']);
+  public getAtivos(): Promise<Ativo[]> {
+    return Promise.resolve([<Ativo>{
+      nome: 'EURUSD',
+      digitos: 5
+    }]);
   }
 
   private onPriceChange(price: Quote) {
