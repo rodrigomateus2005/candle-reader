@@ -248,8 +248,8 @@ export class BotViewComponent implements OnInit, OnDestroy {
     }
   }
 
-  getReversoes(data: Candle[]): any {
-    const retorno = [];
+  getReversoes(data: Candle[]): Reversao[] {
+    const retorno: Reversao[] = [];
 
     let candleAnterior: Candle = null;
     for (const candle of data) {
@@ -259,17 +259,17 @@ export class BotViewComponent implements OnInit, OnDestroy {
         if (retorno.length === 0) {
           retorno.push({
             candle: candle,
-            angulo: angulo
+            tipo: angulo > 0 ? TipoReversao.fundo : TipoReversao.topo
           });
         } else {
           const ultimaReversao = retorno[retorno.length - 1];
+          const tipo = angulo > 0 ? TipoReversao.fundo : TipoReversao.topo;
 
-          if (angulo && angulo > 0 !== ultimaReversao.angulo > 0) {
+          if (angulo &&  tipo !== ultimaReversao.tipo) {
             retorno.push(
               {
                 candle: candle,
-                angulo: angulo,
-                tipo: angulo > 0 ? TipoReversao.fundo : TipoReversao.topo
+                tipo: tipo
               }
             );
           }
@@ -281,6 +281,7 @@ export class BotViewComponent implements OnInit, OnDestroy {
 
     return retorno;
   }
+
 
   getAnguloEntreCandles(candleA: Candle, candleB: Candle, distancia: number, base: BaseAngulo): number {
     if (!candleA || !candleB || !distancia) {
