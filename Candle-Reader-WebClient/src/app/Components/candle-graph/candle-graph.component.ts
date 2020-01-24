@@ -3,6 +3,7 @@ import { Candle } from 'src/app/Models/Candle';
 import { ZoomBehavior, ScaleLinear } from 'd3';
 import { Trendline } from 'src/app/Models/Trendline';
 import { Ativo } from 'src/app/Models/Ativo';
+import { TipoReversao, Reversao } from 'src/app/Models/Reversao';
 
 // import * as d3 from 'd3';
 // import * as techan from 'techan';
@@ -51,6 +52,16 @@ export class CandleGraphComponent implements OnInit, AfterViewInit, DoCheck {
     this.refreshData();
   }
 
+  private _reversoes: Reversao[];
+  public get reversoes(): Reversao[] {
+    return this._reversoes;
+  }
+  @Input()
+  public set reversoes(value: Reversao[]) {
+    this._reversoes = value;
+    this.refreshData();
+  }
+
   private _ativo: Ativo;
   public get ativo(): Ativo {
     return this._ativo;
@@ -93,6 +104,8 @@ export class CandleGraphComponent implements OnInit, AfterViewInit, DoCheck {
 
   private trendlinePlot: any;
 
+  private supstancePlot: any;
+
   private lastCandleDiffer: KeyValueDiffer<string, any>;
 
   constructor(private kvd: KeyValueDiffers) {
@@ -128,6 +141,7 @@ export class CandleGraphComponent implements OnInit, AfterViewInit, DoCheck {
     this.createZoom();
     this.createCrosshair();
     this.createTrendlines();
+    this.createSupstances();
     this.refreshData();
   }
 
@@ -335,6 +349,34 @@ export class CandleGraphComponent implements OnInit, AfterViewInit, DoCheck {
 
   /** trendlines end */
 
+  /** trendlines init */
+
+  private createSupstances() {
+    const supstancePlot = techan.plot.supstance()
+      .xScale(this.x)
+      .yScale(this.y)
+      .on('mouseenter', (d) => { this.supstanceEnter(d); })
+      .on('mouseout', (d) => { this.supstanceOut(d); })
+      .on('drag', (d) => { this.supstanceDrag(d); });
+
+    this.svgD3.append('g')
+      .attr('class', 'supstances')
+      .attr('clip-path', 'url(#clip)');
+
+    this.supstancePlot = supstancePlot;
+  }
+
+  private supstanceEnter(d: any) {
+  }
+
+  private supstanceOut(d: any) {
+  }
+
+  private supstanceDrag(d: any) {
+  }
+
+  /** trendlines end */
+
   private refreshData() {
     if (this.svgD3) {
 
@@ -385,8 +427,19 @@ export class CandleGraphComponent implements OnInit, AfterViewInit, DoCheck {
       this.svgD3.selectAll('g.trendlines')
         .datum(this.trendlines)
         .call(this.trendlinePlot)
-        .call(this.trendlinePlot.drag)
+        // .call(this.trendlinePlot.drag)
         .call(this.trendlinePlot.refresh);
+
+      this.svgD3.selectAll('g.supstances')
+        .datum(this.reversoes.map(x => {
+          return {
+            start: x.candleInicio.time,
+            end: x.candleFim ? x.candleFim.time : null,
+            value: x.tipo === TipoReversao.fundo ? x.candleInicio.high : x.candleInicio.low
+          };
+        })).call(this.supstancePlot)
+        // .call(this.supstancePlot.drag)
+        .call(this.supstancePlot.refresh);
     }
   }
 

@@ -10,6 +10,7 @@ import { CandleSignalRClassicService } from './Services/CandleSignalR/candle-sig
 import { CandleSignalRService } from './Services/CandleSignalR/candle-signal-r.service';
 import { CandleSignalRMockService } from './Services/CandleSignalR/candle-signal-r-mock.service';
 import { CandleGraphTradingViewComponent } from './Components/candle-graph-trading-view/candle-graph-trading-view.component';
+import { CandleFunctionsService } from './Services/CandleFunctions/candle-functions.service';
 
 @NgModule({
   declarations: [
@@ -24,6 +25,7 @@ import { CandleGraphTradingViewComponent } from './Components/candle-graph-tradi
     FormsModule
   ],
   providers: [
+    CandleFunctionsService,
     {
       provide: CandleSignalRService,
       useClass: CandleSignalRClassicService

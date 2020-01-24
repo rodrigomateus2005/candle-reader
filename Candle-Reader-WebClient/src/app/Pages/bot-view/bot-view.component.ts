@@ -1,30 +1,13 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CandleSignalRService } from 'src/app/Services/CandleSignalR/candle-signal-r.service';
+import { CandleFunctionsService } from 'src/app/Services/CandleFunctions/candle-functions.service';
 import { Candle } from 'src/app/Models/Candle';
 import { Quote } from 'src/app/Models/Quote';
 import { Trendline } from 'src/app/Models/Trendline';
 
 import * as moment from 'moment';
 import { Ativo } from 'src/app/Models/Ativo';
-
-export enum BaseAngulo {
-  low,
-  close,
-  mediaFechamentos,
-  mediaMaximas,
-  open,
-  high
-}
-
-export enum TipoReversao {
-  topo,
-  fundo
-}
-
-export interface Reversao {
-  candle: Candle;
-  tipo: TipoReversao;
-}
+import { Reversao, TipoReversao } from 'src/app/Models/Reversao';
 
 @Component({
   selector: 'app-bot-view',
@@ -53,9 +36,12 @@ export class BotViewComponent implements OnInit, OnDestroy {
   public Ativos: Ativo[];
   public Data: Candle[] = [];
   public Trendlines: Trendline[] = [];
+  public Reversoes: Reversao[] = [];
   public TimeScales = [];
 
-  constructor(private candleSignalRService: CandleSignalRService, public changeDetectorRef: ChangeDetectorRef) {
+  constructor(private candleSignalRService: CandleSignalRService,
+    public candleFunctions: CandleFunctionsService,
+    public changeDetectorRef: ChangeDetectorRef) {
 
     this.TimeScales = [
       {
@@ -118,6 +104,8 @@ export class BotViewComponent implements OnInit, OnDestroy {
       } while (isLow);
 
       this.Trendlines = trendlines;
+      this.Reversoes = this.candleFunctions.getReversoes(data);
+      this.candleFunctions.refinarReversoes(this.Reversoes, data);
       this.changeDetectorRef.detectChanges();
     });
   }
@@ -246,81 +234,6 @@ export class BotViewComponent implements OnInit, OnDestroy {
         this.changeDetectorRef.detectChanges();
       }
     }
-  }
-
-  getReversoes(data: Candle[]): Reversao[] {
-    const retorno: Reversao[] = [];
-
-    let candleAnterior: Candle = null;
-    for (const candle of data) {
-      if (candleAnterior) {
-        const angulo = this.getAnguloEntreCandles(candle, candleAnterior, 1, BaseAngulo.mediaFechamentos);
-
-        if (retorno.length === 0) {
-          retorno.push({
-            candle: candle,
-            tipo: angulo > 0 ? TipoReversao.fundo : TipoReversao.topo
-          });
-        } else {
-          const ultimaReversao = retorno[retorno.length - 1];
-          const tipo = angulo > 0 ? TipoReversao.fundo : TipoReversao.topo;
-
-          if (angulo &&  tipo !== ultimaReversao.tipo) {
-            retorno.push(
-              {
-                candle: candle,
-                tipo: tipo
-              }
-            );
-          }
-        }
-      }
-
-      candleAnterior = candle;
-    }
-
-    return retorno;
-  }
-
-
-  getAnguloEntreCandles(candleA: Candle, candleB: Candle, distancia: number, base: BaseAngulo): number {
-    if (!candleA || !candleB || !distancia) {
-      return 0;
-    }
-
-    let catetoOposto = 0;
-
-    switch (base) {
-      case BaseAngulo.low:
-        catetoOposto = candleB.low - candleA.low;
-        break;
-      case BaseAngulo.close:
-        catetoOposto = candleB.close - candleA.close;
-        break;
-      case BaseAngulo.mediaMaximas:
-        const medMaxA = (candleA.low + candleA.high) / 2;
-        const medMaxB = (candleB.low + candleB.high) / 2;
-
-        catetoOposto = medMaxB - medMaxA;
-        break;
-      case BaseAngulo.open:
-        catetoOposto = candleB.open - candleA.open;
-        break;
-      case BaseAngulo.high:
-        catetoOposto = candleB.high - candleA.high;
-        break;
-      default:
-        const medFecA = (candleA.close + candleA.open) / 2;
-        const medFecB = (candleB.close + candleB.open) / 2;
-
-        catetoOposto = medFecB - medFecA;
-        break;
-    }
-
-    const hipotenusa = Math.sqrt(Math.pow(catetoOposto, 2) + Math.pow(distancia, 2));
-    const angulo = Math.asin(catetoOposto / hipotenusa);
-
-    return angulo;
   }
 
 }

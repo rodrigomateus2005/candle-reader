@@ -94,3 +94,13 @@ rect.pane {
   font-size: 10px;
   font-family: Arial, Helvetica, sans-serif;;
 }
+
+.supstance path {
+  stroke: blue;
+  stroke-width: 0.8;
+  stroke-dasharray: 2, 2;
+}
+
+.mouseover .supstance path {
+  stroke-width: 1.5;
+}
