@@ -32,10 +32,11 @@ export class CandleSignalRMockService extends CandleSignalRService {
 
       }
 
-      const diferenca = (Math.ceil(Math.random() * 10) - 5) / 100;
+      const diferenca = (Math.ceil(Math.random() * 10) - 5) / 100000;
 
       this.quote.precoCompra += diferenca;
       this.quote.precoVenda += diferenca;
+      this.quote.fechamento += diferenca;
       this.quote.time = new Date(this.quote.time.getTime() + tempoLoop);
 
       this.onPriceChange(this.quote);

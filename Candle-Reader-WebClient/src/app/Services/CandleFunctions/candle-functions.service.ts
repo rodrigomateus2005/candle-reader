@@ -24,7 +24,7 @@ export class CandleFunctionsService {
     let candleAnterior: Candle = null;
     for (const candle of data) {
       if (candleAnterior) {
-        const angulo = this.getAnguloEntreCandles(candle, candleAnterior, 1, BaseAngulo.mediaFechamentos);
+        const angulo = this.getAnguloEntreCandles(candleAnterior, candle, 1, BaseAngulo.mediaFechamentos);
 
         if (retorno.length === 0) {
           retorno.push({
@@ -76,11 +76,11 @@ export class CandleFunctionsService {
       const dataFiltrada = data
         .filter(x => x.time.getTime() > reversao.candleInicio.time.getTime());
       const indexFim = dataFiltrada
-        .findIndex(x => reversao.tipo === TipoReversao.fundo ? reversao.candleInicio.low > x.low : reversao.candleInicio.high > x.high);
+        .findIndex(x => reversao.tipo === TipoReversao.fundo ? x.low < reversao.candleInicio.low  : x.high > reversao.candleInicio.high);
 
       const dataFim = dataFiltrada.splice(indexFim, indexFim * 2 + 1);
 
-      const candleFim = dataFim.length > 0 ? dataFim[0] : dataFiltrada[0];
+      const candleFim = dataFim.length > 0 ? dataFim.reverse()[0] : dataFiltrada.reverse()[0];
 
       reversao.candleFim = candleFim;
     }

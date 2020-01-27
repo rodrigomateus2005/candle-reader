@@ -435,7 +435,7 @@ export class CandleGraphComponent implements OnInit, AfterViewInit, DoCheck {
           return {
             start: x.candleInicio.time,
             end: x.candleFim ? x.candleFim.time : null,
-            value: x.tipo === TipoReversao.fundo ? x.candleInicio.high : x.candleInicio.low
+            value: x.tipo === TipoReversao.fundo ? x.candleInicio.low : x.candleInicio.high
           };
         })).call(this.supstancePlot)
         // .call(this.supstancePlot.drag)
