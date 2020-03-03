@@ -6,6 +6,7 @@ Imports Ninject
 Public Module CandleReaderConfig
     Public Sub RegisterReader(ByVal kernel As IKernel)
 
+        'Dim candleReader = New MetaTraderReplayCandleReader(New Date(2020, 2, 7))
         Dim candleReader = New MetaTraderCandleReader()
         candleReader.Start()
 

@@ -4,30 +4,25 @@ Imports System.Linq
 Imports System.Web.Http
 Imports System.Web.Http.Cors
 Imports Microsoft.Extensions.DependencyInjection
+Imports Owin
 
 Public Module WebApiConfig
 
-    Public Sub Register(ByVal config As HttpConfiguration)
-        ' Web API configuration and services
+    Public Sub Configure(ByVal appBuilder As IAppBuilder)
+        Dim Config = New HttpConfiguration()
 
-        Dim cors As EnableCorsAttribute = New EnableCorsAttribute("*", "*", "*")
+        Config.MapHttpAttributeRoutes()
 
-        config.EnableCors(cors)
-
-        ' Web API routes
-        config.MapHttpAttributeRoutes()
-
-        config.Routes.MapHttpRoute(
+        Config.Routes.MapHttpRoute(
             name:="DefaultApi",
             routeTemplate:="api/{controller}/{id}",
             defaults:=New With {.id = RouteParameter.Optional}
         )
 
-        'Dim services = New ServiceCollection()
+        SwaggerConfig.Configure(Config)
+        NinjectConfig.Configure(Config)
 
-        'CandleReaderConfig.RegisterReader(services)
+        appBuilder.UseWebApi(Config)
 
-        'Dim Resolver = New DefaultDependencyResolver(services.BuildServiceProvider())
-        'config.DependencyResolver = Resolver
     End Sub
 End Module

@@ -1,6 +1,7 @@
 Imports System
 Imports System.Web
 Imports System.Web.Http
+Imports Microsoft.AspNet.SignalR
 Imports Microsoft.Web.Infrastructure.DynamicModuleHelper
 
 Imports Ninject
@@ -10,11 +11,9 @@ Imports Ninject.Web.Common
 <Assembly: WebActivator.ApplicationShutdownMethodAttribute(GetType(NinjectWebCommon), "StopNinject")>
 Public Module NinjectWebCommon
     Private ReadOnly bootstrapper As Bootstrapper = New Bootstrapper()
+    Private kernel As IKernel
 
     Public Sub Start()
-        'DynamicModuleUtility.RegisterModule(GetType(OnePerRequestHttpModule))
-        'DynamicModuleUtility.RegisterModule(GetType(NinjectHttpModule))
-
         bootstrapper.Initialize(AddressOf CreateKernel)
     End Sub
 
@@ -22,15 +21,20 @@ Public Module NinjectWebCommon
         bootstrapper.ShutDown()
     End Sub
 
+    Public Function GetLoadedKernel() As IKernel
+        Return kernel
+    End Function
+
     Private Function CreateKernel() As IKernel
         Dim kernel = New StandardKernel()
         kernel.Bind(Of Func(Of IKernel))().ToMethod(Function(ctx) Function() New Bootstrapper().Kernel)
-        'kernel.Bind(Of IHttpModule)().To(Of HttpApplicationInitializationHttpModule)()
+
+        NinjectWebCommon.kernel = kernel
 
         RegisterServices(kernel)
 
-        GlobalConfiguration.Configuration.DependencyResolver = New LocalNinjectDependencyResolver(kernel)
-        Microsoft.AspNet.SignalR.GlobalHost.DependencyResolver = New LocalNinjectSignalRDependencyResolver(kernel)
+        NinjectConfig.Configure(GlobalConfiguration.Configuration)
+        GlobalHost.DependencyResolver = New LocalNinjectSignalRDependencyResolver(kernel)
 
         Return kernel
     End Function

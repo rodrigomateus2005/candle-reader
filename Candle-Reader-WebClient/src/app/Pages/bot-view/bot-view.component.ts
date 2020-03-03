@@ -8,6 +8,7 @@ import { Trendline } from 'src/app/Models/Trendline';
 import * as moment from 'moment';
 import { Ativo } from 'src/app/Models/Ativo';
 import { Reversao, TipoReversao } from 'src/app/Models/Reversao';
+import { TipoOrdem } from 'src/app/Models/Ordem';
 
 @Component({
   selector: 'app-bot-view',
@@ -32,16 +33,30 @@ export class BotViewComponent implements OnInit, OnDestroy {
     this._TimeScale = value;
     this.atualizarCandles();
   }
+  private _Volume: any;
+  public get Volume(): any {
+    return this._Volume;
+  }
+  public set Volume(value: any) {
+    this._Volume = value;
+  }
 
   public Ativos: Ativo[];
   public Data: Candle[] = [];
   public Trendlines: Trendline[] = [];
   public Reversoes: Reversao[] = [];
   public TimeScales = [];
+  public Volumes = [];
 
   constructor(private candleSignalRService: CandleSignalRService,
     public candleFunctions: CandleFunctionsService,
     public changeDetectorRef: ChangeDetectorRef) {
+
+    this.Volumes = [
+      1,
+      2,
+      3
+    ];
 
     this.TimeScales = [
       {
@@ -234,6 +249,14 @@ export class BotViewComponent implements OnInit, OnDestroy {
         this.changeDetectorRef.detectChanges();
       }
     }
+  }
+
+  public compraClick() {
+    this.candleSignalRService.addOrdem(this.AtivoSelecionado.nome, TipoOrdem.Compra, this.Volume);
+  }
+
+  public venderClick() {
+    this.candleSignalRService.addOrdem(this.AtivoSelecionado.nome, TipoOrdem.Venda, this.Volume);
   }
 
 }

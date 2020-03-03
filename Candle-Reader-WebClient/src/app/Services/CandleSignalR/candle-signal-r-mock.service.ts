@@ -5,10 +5,10 @@ import { environment } from 'src/environments/environment';
 import { Candle } from 'src/app/Models/Candle';
 import { Quote } from 'src/app/Models/Quote';
 import { Ativo } from 'src/app/Models/Ativo';
+import { Ordem, TipoOrdem } from 'src/app/Models/Ordem';
 
 @Injectable()
 export class CandleSignalRMockService extends CandleSignalRService {
-
   private candles: Candle[];
   private quote: Quote;
 
@@ -61,6 +61,14 @@ export class CandleSignalRMockService extends CandleSignalRService {
 
   private onPriceChange(price: Quote) {
     this.priceChanged.emit(price);
+  }
+
+  public getOrdens(): Promise<Ordem[]> {
+    return Promise.resolve([]);
+  }
+
+  public addOrdem(ativo: string, tipo: TipoOrdem, volume: number): Promise<boolean> {
+    throw new Error('Method not implemented.');
   }
 
   private create() {

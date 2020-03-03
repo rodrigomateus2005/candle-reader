@@ -245,11 +245,11 @@
     <Import Include="System.Web.UI.HtmlControls" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="App_Start\BundleConfig.vb" />
     <Compile Include="App_Start\CandleReaderConfig.vb" />
-    <Compile Include="App_Start\FilterConfig.vb" />
-    <Compile Include="App_Start\RouteConfig.vb" />
+    <Compile Include="App_Start\CorsConfig.vb" />
+    <Compile Include="App_Start\NinjectConfig.vb" />
     <Compile Include="App_Start\SignalRConfig.vb" />
+    <Compile Include="App_Start\Startup.vb" />
     <Compile Include="App_Start\WebApiConfig.vb" />
     <Compile Include="Controllers\BotController.vb" />
     <Compile Include="Global.asax.vb">
@@ -258,6 +258,7 @@
     <Compile Include="Hubs\BotHub.vb" />
     <Compile Include="Models\Ativo.vb" />
     <Compile Include="Models\Candle.vb" />
+    <Compile Include="Models\Ordem.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -275,6 +276,7 @@
     </Compile>
     <Compile Include="Services\ICandleReader.vb" />
     <Compile Include="Services\MetaTraderCandleReader.vb" />
+    <Compile Include="Services\MetaTraderReplayCandleReader.vb" />
     <Compile Include="Statics\LocalNinjectSignalRDependencyResolver.vb" />
     <Compile Include="Statics\LocalNinjectDependencyResolver.vb" />
   </ItemGroup>
@@ -319,7 +321,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Properties\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

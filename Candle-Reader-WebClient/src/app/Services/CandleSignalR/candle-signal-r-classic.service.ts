@@ -5,12 +5,13 @@ import { environment } from 'src/environments/environment';
 import { Candle } from 'src/app/Models/Candle';
 import { Quote } from 'src/app/Models/Quote';
 import { Ativo } from 'src/app/Models/Ativo';
+import { Ordem, TipoOrdem } from 'src/app/Models/Ordem';
 
 declare const $: any;
 
 @Injectable()
 export class CandleSignalRClassicService extends CandleSignalRService {
-
+  
   private hubConnection: any;
   private hubProxy: any;
 
@@ -68,6 +69,28 @@ export class CandleSignalRClassicService extends CandleSignalRService {
           high: x.High,
           low: x.Low,
         }));
+      }).fail(reject);
+    });
+  }
+
+  public getOrdens(): Promise<Ordem[]> {
+    return new Promise((resolve, reject) => {
+      this.hubProxy.invoke('getOrdens').done(data => {
+        resolve(data.map(x => <Ordem>{
+          executado: x.Executado,
+          tipo: x.Tipo,
+          lucroMaximo: x.LucroMaximo,
+          perdaMaxima: x.PerdaMaxima,
+          preco: x.Preco,
+        }));
+      }).fail(reject);
+    });
+  }
+
+  public addOrdem(ativo: string, tipo: TipoOrdem, volume: number): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      this.hubProxy.invoke('addOrdem', ativo, tipo, volume).done(data => {
+        resolve(data);
       }).fail(reject);
     });
   }

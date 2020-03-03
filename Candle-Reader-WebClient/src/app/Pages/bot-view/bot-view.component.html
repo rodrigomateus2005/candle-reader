@@ -1,3 +1,14 @@
+<div>
+    <div>
+        <label *ngFor="let volume of Volumes">
+            <input type="radio" [value]="volume" [(ngModel)]="Volume">
+            {{volume}}
+        </label>
+    </div>
+    <button type="button" (click)="compraClick()">Comprar</button>
+    <button type="button" (click)="venderClick()">Vender</button>
+</div>
+
 <select [(ngModel)]="AtivoSelecionado">
     <option *ngFor="let ativo of Ativos" [ngValue]="ativo">{{ativo.nome}}</option>
 </select>
@@ -6,4 +17,5 @@
     <option *ngFor="let scala of TimeScales" [ngValue]="scala">{{scala.Nome}}</option>
 </select>
 
-<app-candle-graph [Data]="Data" [trendlines]="Trendlines" [reversoes]="Reversoes" [ativo]="AtivoSelecionado"></app-candle-graph> 
+<app-candle-graph [Data]="Data" [trendlines]="Trendlines" [reversoes]="Reversoes" [ativo]="AtivoSelecionado">
+</app-candle-graph>
