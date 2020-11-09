@@ -1,5 +1,16 @@
 /* You can add global styles to this file, and also import other style files */
 
+$material-icons-font-path: '~material-icons/iconfont/';
+@import '~material-icons/iconfont/material-icons.scss';
+//@import '~material-icons/css/material-icons.scss';
+
+html, body {
+  height: 100%;
+}
+body {
+  margin: 0;
+}
+
 path.candle {
     stroke: #000000;
 }
@@ -43,11 +54,11 @@ rect.pane {
 }
 
 // .x.axisannotation path {
-//   fill: #FF0000;  
+//   fill: #FF0000;
 // }
 
 // .x.axisannotation text {
-//   fill: #DDDDDD;  
+//   fill: #DDDDDD;
 // }
 
 // .y.axisannotation path {

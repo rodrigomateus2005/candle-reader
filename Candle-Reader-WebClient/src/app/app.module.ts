@@ -11,13 +11,19 @@ import { CandleSignalRService } from './Services/CandleSignalR/candle-signal-r.s
 import { CandleSignalRMockService } from './Services/CandleSignalR/candle-signal-r-mock.service';
 import { CandleGraphTradingViewComponent } from './Components/candle-graph-trading-view/candle-graph-trading-view.component';
 import { CandleFunctionsService } from './Services/CandleFunctions/candle-functions.service';
+import { BrokerComponent } from './Pages/broker/broker.component';
+import { IdeDirective } from './Directives/Ide/ide.directive';
+import { ToolBoxButtonComponent } from './Components/tool-box-button/tool-box-button.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     CandleGraphComponent,
     BotViewComponent,
-    CandleGraphTradingViewComponent
+    CandleGraphTradingViewComponent,
+    BrokerComponent,
+    IdeDirective,
+    ToolBoxButtonComponent
   ],
   imports: [
     BrowserModule,
